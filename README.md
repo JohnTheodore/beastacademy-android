@@ -1,6 +1,6 @@
 # Beast Academy Android Wrapper
 
-![Version](https://img.shields.io/badge/version-0.1-blue.svg)
+![Version](https://img.shields.io/badge/version-0.2-blue.svg)
 
 A streamlined Android application that provides a native container for the Beast Academy online learning platform. This project is unofficial, and it's not affiliated with beastacademy.com at all. I built this for my kids.
 
@@ -15,10 +15,12 @@ A streamlined Android application that provides a native container for the Beast
 
 This project is a WebView-based Android application designed to provide a seamless experience for Beast Academy users on Android devices.
 
-## Current Version: 0.1 
+## Current Version: 0.2
 * Initial release of the Beast Academy Android wrapper.
 * Implementation of the native Speech Synthesis bridge.
 * Custom adaptive launcher icon and splash screen.
+* Refactored and cleaned up codebase.
+* Full-screen (Edge-to-Edge) implementation.
 
 ## Key Features
 

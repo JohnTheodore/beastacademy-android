@@ -19,8 +19,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -114,77 +112,73 @@ fun BeastAcademyWebView(url: String) {
         })();
     """.trimIndent()
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        AndroidView(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            factory = { factoryContext ->
-                WebView(factoryContext).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                    setLayerType(View.LAYER_TYPE_HARDWARE, null)
+    AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = { factoryContext ->
+            WebView(factoryContext).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
-                    val webViewInstance = this
-                    CookieManager.getInstance().apply {
-                        setAcceptCookie(true)
-                        setAcceptThirdPartyCookies(webViewInstance, true)
-                    }
-
-                    addJavascriptInterface(speechBridge, "AndroidSpeech")
-
-                    settings.apply {
-                        userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-                        javaScriptEnabled = true
-                        domStorageEnabled = true
-                        loadWithOverviewMode = true
-                        useWideViewPort = true
-                        mediaPlaybackRequiresUserGesture = false
-                        mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                        allowFileAccess = true
-                        allowContentAccess = true
-                        javaScriptCanOpenWindowsAutomatically = true
-                    }
-
-                    if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
-                        WebViewCompat.addDocumentStartJavaScript(this, speechPolyfill, setOf("*"))
-                    }
-                    
-                    webChromeClient = object : WebChromeClient() {
-                        override fun onPermissionRequest(request: PermissionRequest?) {
-                            request?.grant(request.resources)
-                        }
-                        override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-                            Log.d(TAG, "JS Console: ${consoleMessage?.message()}")
-                            return true
-                        }
-                    }
-                    
-                    webViewClient = object : WebViewClient() {
-                        override fun onPageFinished(view: WebView?, url: String?) {
-                            canGoBack = view?.canGoBack() ?: false
-                            view?.evaluateJavascript("""
-                                (function() {
-                                    if (window.Howler && Howler.ctx && Howler.ctx.state === 'suspended') {
-                                        const resume = () => Howler.ctx.resume();
-                                        document.addEventListener('touchstart', resume, { once: true });
-                                        document.addEventListener('mousedown', resume, { once: true });
-                                        resume();
-                                    }
-                                })();
-                            """.trimIndent(), null)
-                        }
-                        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?) = false
-                    }
-                    
-                    loadUrl(url)
-                    webView = this
+                val webViewInstance = this
+                CookieManager.getInstance().apply {
+                    setAcceptCookie(true)
+                    setAcceptThirdPartyCookies(webViewInstance, true)
                 }
+
+                addJavascriptInterface(speechBridge, "AndroidSpeech")
+
+                settings.apply {
+                    userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+                    javaScriptEnabled = true
+                    domStorageEnabled = true
+                    loadWithOverviewMode = true
+                    useWideViewPort = true
+                    mediaPlaybackRequiresUserGesture = false
+                    mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                    allowFileAccess = true
+                    allowContentAccess = true
+                    javaScriptCanOpenWindowsAutomatically = true
+                }
+
+                if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+                    WebViewCompat.addDocumentStartJavaScript(this, speechPolyfill, setOf("*"))
+                }
+                
+                webChromeClient = object : WebChromeClient() {
+                    override fun onPermissionRequest(request: PermissionRequest?) {
+                        request?.grant(request.resources)
+                    }
+                    override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+                        Log.d(TAG, "JS Console: ${consoleMessage?.message()}")
+                        return true
+                    }
+                }
+                
+                webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        canGoBack = view?.canGoBack() ?: false
+                        view?.evaluateJavascript("""
+                            (function() {
+                                if (window.Howler && Howler.ctx && Howler.ctx.state === 'suspended') {
+                                    const resume = () => Howler.ctx.resume();
+                                    document.addEventListener('touchstart', resume, { once: true });
+                                    document.addEventListener('mousedown', resume, { once: true });
+                                    resume();
+                                }
+                            })();
+                        """.trimIndent(), null)
+                    }
+                    override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?) = false
+                }
+                
+                loadUrl(url)
+                webView = this
             }
-        )
-    }
+        }
+    )
 
     BackHandler(enabled = canGoBack) {
         webView?.goBack()
