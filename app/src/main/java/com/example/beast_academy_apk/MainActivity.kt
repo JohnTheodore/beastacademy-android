@@ -127,10 +127,10 @@ fun BeastAcademyWebView(url: String) {
                     )
                     setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
-                    val currentWebView = this
+                    val webViewInstance = this
                     CookieManager.getInstance().apply {
                         setAcceptCookie(true)
-                        setAcceptThirdPartyCookies(currentWebView, true)
+                        setAcceptThirdPartyCookies(webViewInstance, true)
                     }
 
                     addJavascriptInterface(speechBridge, "AndroidSpeech")
