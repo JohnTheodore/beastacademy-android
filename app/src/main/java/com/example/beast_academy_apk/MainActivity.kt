@@ -1,6 +1,7 @@
 package com.example.beast_academy_apk
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.media.AudioManager
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +15,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -54,6 +56,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        // Ensure volume is up for media playback
         (getSystemService(AUDIO_SERVICE) as? AudioManager)?.let { audioManager ->
             if (audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) == 0) {
                 audioManager.setStreamVolume(
@@ -66,7 +69,7 @@ class MainActivity : ComponentActivity() {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
-        windowInsetsController?.apply {
+        windowInsetsController.apply {
             hide(WindowInsetsCompat.Type.navigationBars())
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
@@ -82,7 +85,7 @@ class MainActivity : ComponentActivity() {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {
-            WindowCompat.getInsetsController(window, window.decorView)?.apply {
+            WindowCompat.getInsetsController(window, window.decorView).apply {
                 hide(WindowInsetsCompat.Type.navigationBars())
                 systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
@@ -90,14 +93,29 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Main WebView component for Beast Academy.
+ * 
+ * This component includes fixes for:
+ * 1. Full-screen media playback crashing: Properly manages the custom view life cycle
+ *    by using the activity's content view and ensuring state consistency.
+ * 2. Back button handling: Intercepts the back button to either exit full-screen 
+ *    or navigate back in WebView history.
+ * 3. Audio context suspension: Resumes Web Audio API context on user interaction.
+ */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun BeastAcademyWebView(url: String) {
-    val context = LocalContext.current
+    val activity = LocalContext.current as Activity
+    val window = activity.window
     var showTtsWarning by remember { mutableStateOf(false) }
+    
+    // State to track full-screen (CustomView) mode
+    var customView: View? by remember { mutableStateOf(null) }
+    var customViewCallback: WebChromeClient.CustomViewCallback? by remember { mutableStateOf(null) }
 
     val speechBridge = remember { 
-        AndroidSpeechSynthesis(context) {
+        AndroidSpeechSynthesis(context = activity) {
             showTtsWarning = true
         } 
     }
@@ -223,9 +241,54 @@ fun BeastAcademyWebView(url: String) {
                     }
                     
                     webChromeClient = object : WebChromeClient() {
+                        override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
+                            // If a view already exists, hide it first to avoid multiple layers
+                            if (customView != null) {
+                                onHideCustomView()
+                                return
+                            }
+                            
+                            customView = view
+                            customViewCallback = callback
+                            
+                            // Use activity's content view container for the custom (full-screen) view
+                            val decor = window.decorView as ViewGroup
+                            decor.addView(
+                                view,
+                                FrameLayout.LayoutParams(
+                                    FrameLayout.LayoutParams.MATCH_PARENT,
+                                    FrameLayout.LayoutParams.MATCH_PARENT
+                                )
+                            )
+                            
+                            // Hide all system bars for true full-screen experience
+                            WindowCompat.getInsetsController(window, window.decorView).apply {
+                                hide(WindowInsetsCompat.Type.systemBars())
+                                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                            }
+                        }
+
+                        override fun onHideCustomView() {
+                            if (customView == null) return
+                            
+                            val decor = window.decorView as ViewGroup
+                            decor.removeView(customView)
+                            customView = null
+                            
+                            customViewCallback?.onCustomViewHidden()
+                            customViewCallback = null
+                            
+                            // Restore navigation bars
+                            WindowCompat.getInsetsController(window, window.decorView).apply {
+                                hide(WindowInsetsCompat.Type.navigationBars())
+                                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                            }
+                        }
+
                         override fun onPermissionRequest(request: PermissionRequest?) {
                             request?.grant(request.resources)
                         }
+
                         override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
                             Log.d(TAG, "JS Console: ${consoleMessage?.message()}")
                             return true
@@ -237,8 +300,8 @@ fun BeastAcademyWebView(url: String) {
                             canGoBack = view?.canGoBack() ?: false
                             view?.evaluateJavascript("""
                                 (function() {
-                                    if (window.Howler && window.Howler.ctx && window.Howler.ctx.state === 'suspended') {
-                                        const resume = () => window.Howler.ctx.resume();
+                                    if (window.Howler && Howler.ctx && Howler.ctx.state === 'suspended') {
+                                        const resume = () => Howler.ctx.resume();
                                         document.addEventListener('touchstart', resume, { once: true });
                                         document.addEventListener('mousedown', resume, { once: true });
                                         resume();
@@ -280,7 +343,12 @@ fun BeastAcademyWebView(url: String) {
         }
     }
 
-    BackHandler(enabled = canGoBack) {
-        webView?.goBack()
+    // Handle Back button: prioritize closing full-screen view, then WebView history
+    BackHandler(enabled = customView != null || canGoBack) {
+        if (customView != null) {
+            webView?.webChromeClient?.onHideCustomView()
+        } else {
+            webView?.goBack()
+        }
     }
 }
