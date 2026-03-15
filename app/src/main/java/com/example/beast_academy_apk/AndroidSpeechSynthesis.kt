@@ -8,9 +8,20 @@ import java.util.Locale
 
 private const val TAG = "BeastAcademyApp"
 
-class AndroidSpeechSynthesis(context: Context) : TextToSpeech.OnInitListener {
+class AndroidSpeechSynthesis(
+    context: Context,
+    private val onTtsUnavailable: () -> Unit
+) : TextToSpeech.OnInitListener {
     private var tts: TextToSpeech = TextToSpeech(context, this)
     private var isReady = false
+
+    init {
+        val available = tts.engines
+        Log.d(TAG, "Available TTS engines: ${available.map { it.name }}")
+        if (available.isEmpty()) {
+            onTtsUnavailable()
+        }
+    }
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
@@ -19,6 +30,7 @@ class AndroidSpeechSynthesis(context: Context) : TextToSpeech.OnInitListener {
             Log.d(TAG, "TTS initialized successfully")
         } else {
             Log.e(TAG, "TTS Initialization failed!")
+            onTtsUnavailable()
         }
     }
 
