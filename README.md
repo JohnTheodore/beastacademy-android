@@ -15,13 +15,6 @@ A streamlined Android application that provides a native container for the Beast
 
 This project is a WebView-based Android application designed to provide a seamless experience for Beast Academy users on Android devices.
 
-## Current Version: 0.2
-* Initial release of the Beast Academy Android wrapper.
-* Implementation of the native Speech Synthesis bridge.
-* Custom adaptive launcher icon and splash screen.
-* Refactored and cleaned up codebase.
-* Full-screen (Edge-to-Edge) implementation.
-
 ## Key Features
 
 *   **Native Speech Synthesis Bridge:** Implements a custom `AndroidSpeechSynthesis` bridge that polyfills the web `speechSynthesis` API using native Android TTS, ensuring that lesson narrations work reliably.
@@ -29,6 +22,7 @@ This project is a WebView-based Android application designed to provide a seamle
 *   **Desktop Experience:** Uses a custom Desktop User Agent to ensure the full Beast Academy web interface is rendered correctly on tablet devices.
 *   **Modern Android UI:** Built with **Jetpack Compose** and **Material 3**, featuring full **Edge-to-Edge** support for an immersive learning environment.
 *   **Performance Optimized:** Utilizes hardware acceleration and advanced WebView features like `DOCUMENT_START_SCRIPT` for early polyfill injection.
+*   **Full-screen (Edge-to-Edge) implementation.
 
 ## Project Structure
 
