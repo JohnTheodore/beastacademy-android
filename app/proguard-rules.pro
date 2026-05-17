@@ -19,3 +19,8 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep class com.example.beast_academy_apk.AndroidSpeechSynthesis { *; }
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}

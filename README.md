@@ -1,6 +1,6 @@
 # Beast Academy Android Wrapper
 
-![Version](https://img.shields.io/badge/version-0.4-blue.svg)
+![Version](https://img.shields.io/badge/version-0.5-blue.svg)
 
 A streamlined Android application that provides a native container for the Beast Academy online learning platform. This project is unofficial, and it's not affiliated with beastacademy.com at all. I built this for my kids.
 
