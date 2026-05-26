@@ -5,13 +5,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Rect
 import android.media.AudioManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Message
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.webkit.ConsoleMessage
 import android.webkit.CookieManager
 import android.webkit.JsPromptResult
@@ -87,6 +90,29 @@ private val STOP_MEDIA_SCRIPT = """
     } catch(e) {}
 """.trimIndent()
 
+private fun Window.enterImmersiveMode() {
+    WindowCompat.setDecorFitsSystemWindows(this, false)
+    WindowCompat.getInsetsController(this, decorView).apply {
+        hide(WindowInsetsCompat.Type.systemBars())
+        systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    }
+}
+
+private fun View.keepEdgeTouchesInApp() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
+
+    fun updateExclusionRects() {
+        if (width > 0 && height > 0) {
+            systemGestureExclusionRects = listOf(Rect(0, 0, width, height))
+        }
+    }
+
+    addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+        updateExclusionRects()
+    }
+    post { updateExclusionRects() }
+}
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,13 +131,8 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        WindowCompat.getInsetsController(window, window.decorView).apply {
-            hide(WindowInsetsCompat.Type.navigationBars())
-            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }
-
         enableEdgeToEdge()
+        window.enterImmersiveMode()
         setContent {
             BeastacademyapkTheme {
                 BeastAcademyWebView(START_URL)
@@ -122,10 +143,7 @@ class MainActivity : ComponentActivity() {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {
-            WindowCompat.getInsetsController(window, window.decorView).apply {
-                hide(WindowInsetsCompat.Type.navigationBars())
-                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            }
+            window.enterImmersiveMode()
         }
     }
 }
@@ -216,6 +234,7 @@ fun BeastAcademyWebView(url: String) {
                     wv.pauseTimers()
                 }
                 Lifecycle.Event.ON_RESUME -> {
+                    window.enterImmersiveMode()
                     wv.resumeTimers()
                     wv.onResume()
                     wv.evaluateJavascript(
@@ -357,6 +376,7 @@ fun BeastAcademyWebView(url: String) {
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
                     )
+                    keepEdgeTouchesInApp()
 
                     val webViewInstance = this
                     CookieManager.getInstance().apply {
@@ -405,11 +425,9 @@ fun BeastAcademyWebView(url: String) {
                                     FrameLayout.LayoutParams.MATCH_PARENT
                                 )
                             )
+                            view.keepEdgeTouchesInApp()
 
-                            WindowCompat.getInsetsController(window, window.decorView).apply {
-                                hide(WindowInsetsCompat.Type.systemBars())
-                                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                            }
+                            window.enterImmersiveMode()
                         }
 
                         override fun onHideCustomView() {
@@ -420,10 +438,7 @@ fun BeastAcademyWebView(url: String) {
                             customViewCallback?.onCustomViewHidden()
                             customViewCallback = null
 
-                            WindowCompat.getInsetsController(window, window.decorView).apply {
-                                hide(WindowInsetsCompat.Type.navigationBars())
-                                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                            }
+                            window.enterImmersiveMode()
                         }
 
                         override fun onPermissionRequest(request: PermissionRequest?) {
