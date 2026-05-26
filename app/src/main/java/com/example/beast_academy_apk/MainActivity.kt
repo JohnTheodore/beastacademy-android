@@ -161,6 +161,7 @@ fun BeastAcademyWebView(url: String) {
     var webView: WebView? by remember { mutableStateOf(null) }
     var canGoBack by remember { mutableStateOf(false) }
     var loadProgress by remember { mutableIntStateOf(0) }
+    var stoppedForScreenOff by remember { mutableStateOf(false) }
 
     val filePathCallbackHolder = remember { mutableStateOf<ValueCallback<Array<Uri>>?>(null) }
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -176,50 +177,82 @@ fun BeastAcademyWebView(url: String) {
         }
     }
 
-    DisposableEffect(activity, speechBridge) {
-        var shuttingDownForScreenOff = false
-        val screenOffReceiver = object : BroadcastReceiver() {
+    fun stopForScreenOff() {
+        if (stoppedForScreenOff) return
+        stoppedForScreenOff = true
+        Log.d(TAG, "Screen turned off; stopping Beast Academy runtime")
+
+        filePathCallbackHolder.value?.onReceiveValue(null)
+        filePathCallbackHolder.value = null
+
+        if (customView != null) {
+            webView?.webChromeClient?.onHideCustomView()
+        }
+
+        webView?.let { wv ->
+            runCatching { wv.evaluateJavascript(STOP_MEDIA_SCRIPT, null) }
+            runCatching { wv.stopLoading() }
+            runCatching { wv.loadUrl("about:blank") }
+            runCatching { wv.clearHistory() }
+            runCatching { wv.onPause() }
+            runCatching { wv.pauseTimers() }
+        }
+        speechBridge.cancel()
+        canGoBack = false
+        loadProgress = 0
+    }
+
+    fun recoverFromScreenOff() {
+        if (!stoppedForScreenOff) return
+        stoppedForScreenOff = false
+        Log.d(TAG, "Screen turned on; reloading Beast Academy runtime")
+
+        window.enterImmersiveMode()
+        val wv = webView
+        if (wv == null) {
+            activity.recreate()
+            return
+        }
+
+        runCatching { wv.resumeTimers() }
+        runCatching { wv.onResume() }
+        runCatching { wv.loadUrl(url) }
+    }
+
+    DisposableEffect(activity, speechBridge, url) {
+        val screenPowerReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.action != Intent.ACTION_SCREEN_OFF || shuttingDownForScreenOff) return
-                shuttingDownForScreenOff = true
-                Log.d(TAG, "Screen turned off; closing Beast Academy runtime")
-
-                filePathCallbackHolder.value?.onReceiveValue(null)
-                filePathCallbackHolder.value = null
-
-                if (customView != null) {
-                    webView?.webChromeClient?.onHideCustomView()
+                when (intent?.action) {
+                    Intent.ACTION_SCREEN_OFF -> stopForScreenOff()
+                    Intent.ACTION_SCREEN_ON,
+                    Intent.ACTION_USER_PRESENT -> recoverFromScreenOff()
                 }
-
-                webView?.let { wv ->
-                    runCatching { wv.evaluateJavascript(STOP_MEDIA_SCRIPT, null) }
-                    runCatching { wv.stopLoading() }
-                    runCatching { wv.loadUrl("about:blank") }
-                    runCatching { wv.onPause() }
-                    runCatching { wv.pauseTimers() }
-                }
-                speechBridge.shutdown()
-                activity.finishAndRemoveTask()
             }
+        }
+
+        val screenPowerFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_USER_PRESENT)
         }
 
         ContextCompat.registerReceiver(
             activity,
-            screenOffReceiver,
-            IntentFilter(Intent.ACTION_SCREEN_OFF),
+            screenPowerReceiver,
+            screenPowerFilter,
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
         onDispose {
-            runCatching { activity.unregisterReceiver(screenOffReceiver) }
+            runCatching { activity.unregisterReceiver(screenPowerReceiver) }
         }
     }
 
     DisposableEffect(lifecycle) {
         val observer = LifecycleEventObserver { _, event ->
-            val wv = webView ?: return@LifecycleEventObserver
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
+                    val wv = webView ?: return@LifecycleEventObserver
                     wv.evaluateJavascript(
                         """
                         try {
@@ -234,6 +267,11 @@ fun BeastAcademyWebView(url: String) {
                     wv.pauseTimers()
                 }
                 Lifecycle.Event.ON_RESUME -> {
+                    if (stoppedForScreenOff) {
+                        recoverFromScreenOff()
+                        return@LifecycleEventObserver
+                    }
+                    val wv = webView ?: return@LifecycleEventObserver
                     window.enterImmersiveMode()
                     wv.resumeTimers()
                     wv.onResume()
