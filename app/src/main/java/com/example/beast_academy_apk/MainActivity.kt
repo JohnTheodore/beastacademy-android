@@ -1,7 +1,10 @@
 package com.example.beast_academy_apk
 
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Bundle
@@ -52,6 +55,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -64,6 +68,24 @@ import kotlinx.coroutines.delay
 
 private const val TAG = "BeastAcademyApp"
 private const val START_URL = "https://beastacademy.com/school"
+private val STOP_MEDIA_SCRIPT = """
+    try {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    } catch(e) {}
+    try {
+      document.querySelectorAll('audio,video').forEach(function(el) {
+        el.pause();
+        el.removeAttribute('src');
+        el.load();
+      });
+    } catch(e) {}
+    try {
+      if (window.Howler) {
+        Howler.stop();
+        if (Howler.ctx && Howler.ctx.state !== 'closed') Howler.ctx.close();
+      }
+    } catch(e) {}
+""".trimIndent()
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,7 +133,7 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun BeastAcademyWebView(url: String) {
-    val activity = LocalContext.current as ComponentActivity
+    val activity = LocalContext.current as MainActivity
     val window = activity.window
     val lifecycle = activity.lifecycle
 
@@ -133,6 +155,45 @@ fun BeastAcademyWebView(url: String) {
     val speechBridge = remember {
         AndroidSpeechSynthesis(context = activity) {
             showTtsWarning = true
+        }
+    }
+
+    DisposableEffect(activity, speechBridge) {
+        var shuttingDownForScreenOff = false
+        val screenOffReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != Intent.ACTION_SCREEN_OFF || shuttingDownForScreenOff) return
+                shuttingDownForScreenOff = true
+                Log.d(TAG, "Screen turned off; closing Beast Academy runtime")
+
+                filePathCallbackHolder.value?.onReceiveValue(null)
+                filePathCallbackHolder.value = null
+
+                if (customView != null) {
+                    webView?.webChromeClient?.onHideCustomView()
+                }
+
+                webView?.let { wv ->
+                    runCatching { wv.evaluateJavascript(STOP_MEDIA_SCRIPT, null) }
+                    runCatching { wv.stopLoading() }
+                    runCatching { wv.loadUrl("about:blank") }
+                    runCatching { wv.onPause() }
+                    runCatching { wv.pauseTimers() }
+                }
+                speechBridge.shutdown()
+                activity.finishAndRemoveTask()
+            }
+        }
+
+        ContextCompat.registerReceiver(
+            activity,
+            screenOffReceiver,
+            IntentFilter(Intent.ACTION_SCREEN_OFF),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+
+        onDispose {
+            runCatching { activity.unregisterReceiver(screenOffReceiver) }
         }
     }
 
