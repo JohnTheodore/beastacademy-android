@@ -1,32 +1,10 @@
 package com.example.beast_academy_apk
 
-import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.graphics.Rect
 import android.media.AudioManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Message
-import android.util.Log
-import android.view.View
 import android.view.ViewGroup
-import android.view.Window
-import android.webkit.ConsoleMessage
-import android.webkit.CookieManager
-import android.webkit.JsPromptResult
-import android.webkit.JsResult
-import android.webkit.PermissionRequest
-import android.webkit.RenderProcessGoneDetail
-import android.webkit.ValueCallback
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceRequest
-import android.webkit.WebSettings
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -34,84 +12,23 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.webkit.WebViewCompat
-import androidx.webkit.WebViewFeature
 import com.example.beast_academy_apk.ui.theme.BeastacademyapkTheme
 import kotlinx.coroutines.delay
-
-private const val TAG = "BeastAcademyApp"
-private const val START_URL = "https://beastacademy.com/school"
-private val STOP_MEDIA_SCRIPT = """
-    try {
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
-    } catch(e) {}
-    try {
-      document.querySelectorAll('audio,video').forEach(function(el) {
-        el.pause();
-        el.removeAttribute('src');
-        el.load();
-      });
-    } catch(e) {}
-    try {
-      if (window.Howler) {
-        Howler.stop();
-        if (Howler.ctx && Howler.ctx.state !== 'closed') Howler.ctx.close();
-      }
-    } catch(e) {}
-""".trimIndent()
-
-private fun Window.enterImmersiveMode() {
-    WindowCompat.setDecorFitsSystemWindows(this, false)
-    WindowCompat.getInsetsController(this, decorView).apply {
-        hide(WindowInsetsCompat.Type.systemBars())
-        systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-    }
-}
-
-private fun View.keepEdgeTouchesInApp() {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
-
-    fun updateExclusionRects() {
-        if (width > 0 && height > 0) {
-            systemGestureExclusionRects = listOf(Rect(0, 0, width, height))
-        }
-    }
-
-    addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
-        updateExclusionRects()
-    }
-    post { updateExclusionRects() }
-}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -132,44 +49,22 @@ class MainActivity : ComponentActivity() {
         }
 
         enableEdgeToEdge()
-        window.enterImmersiveMode()
         setContent {
             BeastacademyapkTheme {
-                BeastAcademyWebView(START_URL)
+                BeastAcademyApp()
             }
-        }
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            window.enterImmersiveMode()
         }
     }
 }
 
-@SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun BeastAcademyWebView(url: String) {
+fun BeastAcademyApp() {
     val activity = LocalContext.current as MainActivity
-    val window = activity.window
     val lifecycle = activity.lifecycle
 
     var showTtsWarning by remember { mutableStateOf(false) }
-    var customView: View? by remember { mutableStateOf(null) }
-    var customViewCallback: WebChromeClient.CustomViewCallback? by remember { mutableStateOf(null) }
-    var webView: WebView? by remember { mutableStateOf(null) }
-    var canGoBack by remember { mutableStateOf(false) }
+    var recoveryState by remember { mutableStateOf<BeastAcademyWebViewController.RecoveryState>(BeastAcademyWebViewController.RecoveryState.Healthy) }
     var loadProgress by remember { mutableIntStateOf(0) }
-    var stoppedForScreenOff by remember { mutableStateOf(false) }
-
-    val filePathCallbackHolder = remember { mutableStateOf<ValueCallback<Array<Uri>>?>(null) }
-    val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenMultipleDocuments()
-    ) { uris: List<Uri> ->
-        filePathCallbackHolder.value?.onReceiveValue(uris.toTypedArray())
-        filePathCallbackHolder.value = null
-    }
 
     val speechBridge = remember {
         AndroidSpeechSynthesis(context = activity) {
@@ -177,124 +72,41 @@ fun BeastAcademyWebView(url: String) {
         }
     }
 
-    fun stopForScreenOff() {
-        if (stoppedForScreenOff) return
-        stoppedForScreenOff = true
-        Log.d(TAG, "Screen turned off; stopping Beast Academy runtime")
-
-        filePathCallbackHolder.value?.onReceiveValue(null)
-        filePathCallbackHolder.value = null
-
-        if (customView != null) {
-            webView?.webChromeClient?.onHideCustomView()
-        }
-
-        webView?.let { wv ->
-            runCatching { wv.evaluateJavascript(STOP_MEDIA_SCRIPT, null) }
-            runCatching { wv.stopLoading() }
-            runCatching { wv.loadUrl("about:blank") }
-            runCatching { wv.clearHistory() }
-            runCatching { wv.onPause() }
-            runCatching { wv.pauseTimers() }
-        }
-        speechBridge.cancel()
-        canGoBack = false
-        loadProgress = 0
-    }
-
-    fun recoverFromScreenOff() {
-        if (!stoppedForScreenOff) return
-        stoppedForScreenOff = false
-        Log.d(TAG, "Screen turned on; reloading Beast Academy runtime")
-
-        window.enterImmersiveMode()
-        val wv = webView
-        if (wv == null) {
-            activity.recreate()
-            return
-        }
-
-        runCatching { wv.resumeTimers() }
-        runCatching { wv.onResume() }
-        runCatching { wv.loadUrl(url) }
-    }
-
-    DisposableEffect(activity, speechBridge, url) {
-        val screenPowerReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                when (intent?.action) {
-                    Intent.ACTION_SCREEN_OFF -> stopForScreenOff()
-                    Intent.ACTION_SCREEN_ON,
-                    Intent.ACTION_USER_PRESENT -> recoverFromScreenOff()
-                }
-            }
-        }
-
-        val screenPowerFilter = IntentFilter().apply {
-            addAction(Intent.ACTION_SCREEN_OFF)
-            addAction(Intent.ACTION_SCREEN_ON)
-            addAction(Intent.ACTION_USER_PRESENT)
-        }
-
-        ContextCompat.registerReceiver(
-            activity,
-            screenPowerReceiver,
-            screenPowerFilter,
-            ContextCompat.RECEIVER_NOT_EXPORTED
+    // Initialize controller without launcher first
+    val controller = remember {
+        BeastAcademyWebViewController(
+            activity = activity,
+            speechBridge = speechBridge,
+            onProgressChanged = { loadProgress = it },
+            onRecoveryStateChanged = { recoveryState = it }
         )
+    }
 
-        onDispose {
-            runCatching { activity.unregisterReceiver(screenPowerReceiver) }
-        }
+    // Link file picker launcher to controller
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenMultipleDocuments()
+    ) { uris: List<Uri> ->
+        controller.filePathCallback?.onReceiveValue(uris.toTypedArray())
+        controller.filePathCallback = null
+    }
+    
+    // Pass the launcher to the controller
+    SideEffect {
+        controller.filePickerLauncher = filePickerLauncher
     }
 
     DisposableEffect(lifecycle) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_PAUSE -> {
-                    val wv = webView ?: return@LifecycleEventObserver
-                    wv.evaluateJavascript(
-                        """
-                        try {
-                          Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
-                          Object.defineProperty(document, 'hidden', { value: true, configurable: true });
-                          document.dispatchEvent(new Event('visibilitychange'));
-                        } catch(e) {}
-                        """.trimIndent(),
-                        null
-                    )
-                    wv.onPause()
-                    wv.pauseTimers()
-                }
-                Lifecycle.Event.ON_RESUME -> {
-                    if (stoppedForScreenOff) {
-                        recoverFromScreenOff()
-                        return@LifecycleEventObserver
-                    }
-                    val wv = webView ?: return@LifecycleEventObserver
-                    window.enterImmersiveMode()
-                    wv.resumeTimers()
-                    wv.onResume()
-                    wv.evaluateJavascript(
-                        """
-                        try {
-                          Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
-                          Object.defineProperty(document, 'hidden', { value: false, configurable: true });
-                          document.dispatchEvent(new Event('visibilitychange'));
-                          if (window.Howler && Howler.ctx && Howler.ctx.state === 'suspended') Howler.ctx.resume();
-                        } catch(e) {}
-                        """.trimIndent(),
-                        null
-                    )
-                }
+                Lifecycle.Event.ON_PAUSE -> controller.onPause()
+                Lifecycle.Event.ON_RESUME -> controller.onResume()
                 else -> {}
             }
         }
         lifecycle.addObserver(observer)
         onDispose {
             lifecycle.removeObserver(observer)
-            speechBridge.shutdown()
-            webView?.destroy()
+            controller.shutdown()
         }
     }
 
@@ -305,339 +117,133 @@ fun BeastAcademyWebView(url: String) {
         }
     }
 
-    val speechPolyfill = """
-        (function() {
-          var _pending = {};
-          var _seq = 0;
-
-          function waitForBridge(callback, retries) {
-            if (window.AndroidSpeech && window.AndroidSpeech.isReady()) {
-              callback(true);
-            } else if (retries <= 0) {
-              callback(false);
-            } else {
-              setTimeout(function() { waitForBridge(callback, retries - 1); }, 300);
-            }
-          }
-
-          window.__androidTtsStart = function(id) {
-            var u = _pending[id];
-            if (u && u.onstart) { try { u.onstart({}); } catch(e) {} }
-          };
-          window.__androidTtsDone = function(id) {
-            var u = _pending[id];
-            delete _pending[id];
-            window.speechSynthesis.speaking = Object.keys(_pending).length > 0;
-            if (u && u.onend) { try { u.onend({}); } catch(e) {} }
-          };
-          window.__androidTtsError = function(id) {
-            var u = _pending[id];
-            delete _pending[id];
-            window.speechSynthesis.speaking = Object.keys(_pending).length > 0;
-            if (u && u.onerror) { try { u.onerror({ error: 'synthesis-failed' }); } catch(e) {} }
-          };
-
-          window.SpeechSynthesisUtterance = function(text) {
-            this.text = text || '';
-            this.lang = 'en-US';
-            this.rate = 1; this.pitch = 1; this.volume = 1;
-            this.onend = null; this.onstart = null; this.onerror = null;
-          };
-
-          var _listeners = {};
-
-          window.speechSynthesis = {
-            speaking: false,
-            pending: false,
-            paused: false,
-
-            addEventListener: function(type, fn) {
-              if (!_listeners[type]) _listeners[type] = [];
-              _listeners[type].push(fn);
-            },
-            removeEventListener: function(type, fn) {
-              if (!_listeners[type]) return;
-              _listeners[type] = _listeners[type].filter(function(f) { return f !== fn; });
-            },
-            dispatchEvent: function(event) {
-              var fns = _listeners[event.type] || [];
-              fns.forEach(function(fn) { try { fn(event); } catch(e) {} });
-              return true;
-            },
-
-            getVoices: function() {
-              return [{ name: 'Android TTS', lang: 'en-US', default: true, localService: true, voiceURI: 'Android TTS' }];
-            },
-            speak: function(utterance) {
-              var self = this;
-              var id = 'utt_' + (++_seq);
-              _pending[id] = utterance;
-              waitForBridge(function(ok) {
-                if (!ok) {
-                  delete _pending[id];
-                  self.speaking = Object.keys(_pending).length > 0;
-                  if (utterance.onerror) { try { utterance.onerror({ error: 'synthesis-unavailable' }); } catch(e) {} }
-                  return;
-                }
-                var queued = window.AndroidSpeech.speak(id, utterance.text || '');
-                if (queued) {
-                  self.speaking = true;
-                } else {
-                  delete _pending[id];
-                  self.speaking = Object.keys(_pending).length > 0;
-                  if (utterance.onerror) { try { utterance.onerror({ error: 'synthesis-unavailable' }); } catch(e) {} }
-                }
-              }, 20);
-            },
-            cancel: function() {
-              _pending = {};
-              this.speaking = false;
-              if (window.AndroidSpeech) window.AndroidSpeech.cancel();
-            },
-            pause: function() {},
-            resume: function() {}
-          };
-
-          setTimeout(function() {
-            var event = new Event('voiceschanged');
-            window.speechSynthesis.dispatchEvent(event);
-          }, 500);
-        })();
-    """.trimIndent()
-
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { factoryContext ->
-                WebView(factoryContext).apply {
+                FrameLayout(factoryContext).apply {
                     layoutParams = ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
                     )
-                    keepEdgeTouchesInApp()
-
-                    val webViewInstance = this
-                    CookieManager.getInstance().apply {
-                        setAcceptCookie(true)
-                        setAcceptThirdPartyCookies(webViewInstance, true)
-                    }
-
-                    addJavascriptInterface(speechBridge, "AndroidSpeech")
-                    speechBridge.attachWebView(this)
-
-                    settings.apply {
-                        userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-                        javaScriptEnabled = true
-                        domStorageEnabled = true
-                        loadWithOverviewMode = true
-                        useWideViewPort = true
-                        mediaPlaybackRequiresUserGesture = false
-                        mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                        allowFileAccess = true
-                        allowContentAccess = true
-                        javaScriptCanOpenWindowsAutomatically = true
-                        setSupportMultipleWindows(true)
-                    }
-
-                    if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
-                        WebViewCompat.addDocumentStartJavaScript(this, speechPolyfill, setOf("*"))
-                    }
-
-                    webChromeClient = object : WebChromeClient() {
-                        override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
-                            if (customView != null) {
-                                onHideCustomView()
-                            }
-                            if (view == null) {
-                                callback?.onCustomViewHidden()
-                                return
-                            }
-                            customView = view
-                            customViewCallback = callback
-
-                            val decor = window.decorView as ViewGroup
-                            decor.addView(
-                                view,
-                                FrameLayout.LayoutParams(
-                                    FrameLayout.LayoutParams.MATCH_PARENT,
-                                    FrameLayout.LayoutParams.MATCH_PARENT
-                                )
-                            )
-                            view.keepEdgeTouchesInApp()
-
-                            window.enterImmersiveMode()
-                        }
-
-                        override fun onHideCustomView() {
-                            val view = customView ?: return
-                            val decor = window.decorView as ViewGroup
-                            decor.removeView(view)
-                            customView = null
-                            customViewCallback?.onCustomViewHidden()
-                            customViewCallback = null
-
-                            window.enterImmersiveMode()
-                        }
-
-                        override fun onPermissionRequest(request: PermissionRequest?) {
-                            request?.grant(request.resources)
-                        }
-
-                        override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                            loadProgress = newProgress
-                        }
-
-                        override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-                            val m = consoleMessage ?: return true
-                            if (BuildConfig.DEBUG || m.messageLevel() == ConsoleMessage.MessageLevel.ERROR) {
-                                Log.d(TAG, "JS [${m.messageLevel()}]: ${m.message()}")
-                            }
-                            return true
-                        }
-
-                        override fun onJsAlert(view: WebView?, url: String?, message: String?, result: JsResult?): Boolean {
-                            Log.d(TAG, "JS alert: $message")
-                            result?.confirm()
-                            return true
-                        }
-
-                        override fun onJsConfirm(view: WebView?, url: String?, message: String?, result: JsResult?): Boolean {
-                            Log.d(TAG, "JS confirm (auto-cancel): $message")
-                            result?.cancel()
-                            return true
-                        }
-
-                        override fun onJsPrompt(view: WebView?, url: String?, message: String?, defaultValue: String?, result: JsPromptResult?): Boolean {
-                            Log.d(TAG, "JS prompt (auto-cancel): $message")
-                            result?.cancel()
-                            return true
-                        }
-
-                        override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
-                            val ctx = view?.context ?: return false
-                            val stub = WebView(ctx).apply { settings.javaScriptEnabled = true }
-                            stub.webViewClient = object : WebViewClient() {
-                                override fun shouldOverrideUrlLoading(v: WebView?, req: WebResourceRequest?): Boolean {
-                                    req?.url?.let { uri ->
-                                        runCatching {
-                                            activity.startActivity(
-                                                Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                            )
-                                        }
-                                    }
-                                    v?.destroy()
-                                    return true
-                                }
-                            }
-                            val transport = resultMsg?.obj as? WebView.WebViewTransport
-                            transport?.webView = stub
-                            resultMsg?.sendToTarget()
-                            return true
-                        }
-
-                        override fun onShowFileChooser(
-                            webView: WebView?,
-                            filePathCallback: ValueCallback<Array<Uri>>?,
-                            fileChooserParams: FileChooserParams?
-                        ): Boolean {
-                            filePathCallbackHolder.value?.onReceiveValue(null)
-                            filePathCallbackHolder.value = filePathCallback
-                            val acceptTypes = fileChooserParams?.acceptTypes
-                                ?.filter { it.isNotEmpty() }
-                                ?.toTypedArray()
-                                ?.takeIf { it.isNotEmpty() }
-                                ?: arrayOf("*/*")
-                            return runCatching {
-                                filePickerLauncher.launch(acceptTypes)
-                                true
-                            }.getOrElse {
-                                filePathCallbackHolder.value = null
-                                filePathCallback?.onReceiveValue(null)
-                                false
-                            }
-                        }
-                    }
-
-                    webViewClient = object : WebViewClient() {
-                        override fun onPageFinished(view: WebView?, url: String?) {
-                            canGoBack = view?.canGoBack() ?: false
-                            view?.evaluateJavascript("""
-                                (function() {
-                                  function resume() {
-                                    if (window.Howler && Howler.ctx && Howler.ctx.state === 'suspended') {
-                                      try { Howler.ctx.resume(); } catch(e) {}
-                                    }
-                                  }
-                                  if (!window.__baResumeHooked) {
-                                    window.__baResumeHooked = true;
-                                    document.addEventListener('touchstart', resume, true);
-                                    document.addEventListener('mousedown', resume, true);
-                                    document.addEventListener('visibilitychange', function() {
-                                      if (!document.hidden) resume();
-                                    });
-                                  }
-                                  resume();
-                                })();
-                            """.trimIndent(), null)
-                        }
-
-                        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?) = false
-
-                        override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
-                            Log.e(TAG, "Renderer gone (crashed=${detail?.didCrash()}, priority=${detail?.rendererPriorityAtExit()})")
-                            view?.let { wv ->
-                                (wv.parent as? ViewGroup)?.removeView(wv)
-                                wv.destroy()
-                            }
-                            if (webView === view) webView = null
-                            activity.recreate()
-                            return true
-                        }
-                    }
-
-                    loadUrl(url)
-                    webView = this
+                    controller.attachHost(this)
                 }
+            },
+            onRelease = { host ->
+                controller.detachHost(host)
             }
         )
 
-        if (loadProgress in 1..99) {
+        if (loadProgress in 1..99 && recoveryState == BeastAcademyWebViewController.RecoveryState.Healthy) {
             LinearProgressIndicator(
                 progress = { loadProgress / 100f },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().statusBarsPadding(),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
         }
 
+        // Recovery UI Overlay
+        when (val state = recoveryState) {
+            is BeastAcademyWebViewController.RecoveryState.Healthy -> {}
+            is BeastAcademyWebViewController.RecoveryState.HungWaiting,
+            is BeastAcademyWebViewController.RecoveryState.Recovering -> {
+                RecoveryOverlay(
+                    message = if (state is BeastAcademyWebViewController.RecoveryState.HungWaiting) 
+                        "Beast Academy stopped responding." else "Recovering...",
+                    showProgress = true,
+                    onReload = { controller.requestRecovery(RecoveryReason.MANUAL_RELOAD) }
+                )
+            }
+            is BeastAcademyWebViewController.RecoveryState.Failed -> {
+                RecoveryOverlay(
+                    message = state.message,
+                    showProgress = false,
+                    onReload = { controller.requestRecovery(RecoveryReason.MANUAL_RELOAD) }
+                )
+            }
+        }
+
         if (showTtsWarning) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 64.dp),
-                contentAlignment = Alignment.TopCenter
+            TtsWarningOverlay()
+        }
+    }
+
+    BackHandler {
+        if (!controller.handleBack()) {
+            activity.finish()
+        }
+    }
+}
+
+@Composable
+fun RecoveryOverlay(message: String, showProgress: Boolean, onReload: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f)
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            modifier = Modifier.widthIn(max = 400.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.Black.copy(alpha = 0.7f)
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
                     ),
-                    modifier = Modifier.padding(horizontal = 24.dp)
+                    textAlign = TextAlign.Center
+                )
+                
+                if (showProgress) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                }
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                Button(
+                    onClick = onReload,
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(
-                        text = "No TTS engine found. Go to Settings → Accessibility → Text-to-speech to install one.",
-                        color = Color.White,
-                        modifier = Modifier.padding(16.dp),
-                        textAlign = TextAlign.Center
-                    )
+                    Text("Reload now")
                 }
             }
         }
     }
+}
 
-    BackHandler(enabled = customView != null || canGoBack) {
-        if (customView != null) {
-            webView?.webChromeClient?.onHideCustomView()
-        } else {
-            webView?.goBack()
+@Composable
+fun TtsWarningOverlay() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 64.dp),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Card(
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.Black.copy(alpha = 0.7f)
+            ),
+            modifier = Modifier.padding(horizontal = 24.dp)
+        ) {
+            Text(
+                text = "No TTS engine found. Go to Settings → Accessibility → Text-to-speech to install one.",
+                color = Color.White,
+                modifier = Modifier.padding(16.dp),
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

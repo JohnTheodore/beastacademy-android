@@ -1,6 +1,6 @@
 # Beast Academy Android Wrapper
 
-![Version](https://img.shields.io/badge/version-0.6-blue.svg)
+![Version](https://img.shields.io/badge/version-0.7-blue.svg)
 
 A streamlined Android application that provides a native container for the Beast Academy online learning platform. This project is unofficial, and it's not affiliated with beastacademy.com at all. I built this for my kids.
 
@@ -15,6 +15,13 @@ A streamlined Android application that provides a native container for the Beast
 
 This project is a WebView-based Android application designed to provide a seamless experience for Beast Academy users on Android devices.
 
+### 0.7 Release Highlights:
+*   **Automatic Hung-Renderer Recovery:** Detects and recovers from non-responsive renderers.
+*   **Robust Renderer-Crash Recovery:** Automatically replaces failed WebViews while preserving session state.
+*   **Correct Screen Lock/Unlock Behavior:** No longer blanks or reloads the page on screen-off.
+*   **Improved Full-screen Cleanup:** Centralized handling of custom media views to prevent touch blocking.
+*   **TTS Generation Safety:** Prevents races between Text-to-Speech callbacks and WebView lifecycle.
+
 ## Key Features
 
 *   **Native Speech Synthesis Bridge:** Implements a custom `AndroidSpeechSynthesis` bridge that polyfills the web `speechSynthesis` API using native Android TTS, ensuring that lesson narrations work reliably.
@@ -27,6 +34,7 @@ This project is a WebView-based Android application designed to provide a seamle
 ## Project Structure
 
 *   `MainActivity.kt`: The main entry point using Compose to host the `WebView`.
+*   `BeastAcademyWebViewController.kt`: Authoritative controller for WebView lifecycle and reliability.
 *   `AndroidSpeechSynthesis.kt`: Native implementation of the Text-to-Speech bridge.
 *   `res/`: Optimized resources including an adaptive launcher icon specifically tuned for the Pixel Tablet experience.
 

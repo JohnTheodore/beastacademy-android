@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace = "com.example.beast_academy_apk"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.example.beast_academy_apk"
         minSdk = 24
-        targetSdk = 36
-        versionCode = 6
-        versionName = "0.6"
+        targetSdk = 37
+        versionCode = 7
+        versionName = "0.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
