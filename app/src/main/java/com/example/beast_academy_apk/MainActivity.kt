@@ -1,6 +1,9 @@
 package com.example.beast_academy_apk
 
-import android.media.AudioManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
 import android.view.ViewGroup
@@ -8,6 +11,7 @@ import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -19,12 +23,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.example.beast_academy_apk.ui.theme.BeastacademyapkTheme
@@ -38,16 +42,6 @@ class MainActivity : ComponentActivity() {
             WebView.setWebContentsDebuggingEnabled(true)
         }
 
-        (getSystemService(AUDIO_SERVICE) as? AudioManager)?.let { audioManager ->
-            if (audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) == 0) {
-                audioManager.setStreamVolume(
-                    AudioManager.STREAM_MUSIC,
-                    audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) / 2,
-                    0
-                )
-            }
-        }
-
         enableEdgeToEdge()
         setContent {
             BeastacademyapkTheme {
@@ -59,7 +53,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun BeastAcademyApp() {
-    val activity = LocalContext.current as MainActivity
+    val activity = LocalActivity.current as MainActivity
     val lifecycle = activity.lifecycle
 
     var showTtsWarning by remember { mutableStateOf(false) }
@@ -93,6 +87,27 @@ fun BeastAcademyApp() {
     // Pass the launcher to the controller
     SideEffect {
         controller.filePickerLauncher = filePickerLauncher
+    }
+
+    DisposableEffect(activity, controller) {
+        val screenOffReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == Intent.ACTION_SCREEN_OFF) {
+                    controller.onScreenOff()
+                }
+            }
+        }
+
+        ContextCompat.registerReceiver(
+            activity,
+            screenOffReceiver,
+            IntentFilter(Intent.ACTION_SCREEN_OFF),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+
+        onDispose {
+            runCatching { activity.unregisterReceiver(screenOffReceiver) }
+        }
     }
 
     DisposableEffect(lifecycle) {

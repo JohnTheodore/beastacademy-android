@@ -1,6 +1,6 @@
 # Beast Academy Android Wrapper
 
-![Version](https://img.shields.io/badge/version-0.7-blue.svg)
+![Version](https://img.shields.io/badge/version-0.7.2-blue.svg)
 
 A streamlined Android application that provides a native container for the Beast Academy online learning platform. This project is unofficial, and it's not affiliated with beastacademy.com at all. I built this for my kids.
 
@@ -15,10 +15,10 @@ A streamlined Android application that provides a native container for the Beast
 
 This project is a WebView-based Android application designed to provide a seamless experience for Beast Academy users on Android devices.
 
-### 0.7 Release Highlights:
+### 0.7.2 Release Highlights:
 *   **Automatic Hung-Renderer Recovery:** Detects and recovers from non-responsive renderers.
 *   **Robust Renderer-Crash Recovery:** Automatically replaces failed WebViews while preserving session state.
-*   **Correct Screen Lock/Unlock Behavior:** No longer blanks or reloads the page on screen-off.
+*   **Immediate Screen-off Audio Muting:** Uses the native WebView mute API before pausing page processing, while preserving the lesson on supported WebView providers.
 *   **Improved Full-screen Cleanup:** Centralized handling of custom media views to prevent touch blocking.
 *   **TTS Generation Safety:** Prevents races between Text-to-Speech callbacks and WebView lifecycle.
 

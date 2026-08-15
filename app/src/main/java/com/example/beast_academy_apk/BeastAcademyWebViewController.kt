@@ -2,7 +2,6 @@ package com.example.beast_academy_apk
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Build
@@ -32,7 +31,65 @@ private const val TAG = "BeastAcademyApp"
 private const val RECOVERY_GRACE_PERIOD_MS = 2000L
 private const val RECOVERY_FALLBACK_MS = 2000L
 private const val POPUP_TIMEOUT_MS = 10000L
+private const val AUDIO_STATE_CLEANUP_TIMEOUT_MS = 250L
 private const val DEFAULT_START_URL = "https://beastacademy.com/school"
+
+private val PAUSE_WEB_AUDIO_SCRIPT = """
+    (function() {
+      function pauseWindow(target) {
+        try {
+          if (target.speechSynthesis) target.speechSynthesis.cancel();
+        } catch(e) {}
+        try {
+          target.document.querySelectorAll('audio, video').forEach(function(el) {
+            el.pause();
+          });
+        } catch(e) {}
+        try {
+          if (target.Howler) {
+            target.Howler.pause();
+            if (target.Howler.ctx && target.Howler.ctx.state === 'running') {
+              target.Howler.ctx.suspend();
+            }
+          }
+        } catch(e) {}
+        try {
+          for (var i = 0; i < target.frames.length; i++) {
+            pauseWindow(target.frames[i]);
+          }
+        } catch(e) {}
+      }
+      pauseWindow(window);
+      return true;
+    })();
+""".trimIndent()
+
+private val WEB_AUDIO_LIFECYCLE_SCRIPT = """
+    (function() {
+      if (window.__baAudioLifecycleInstalled) return;
+      window.__baAudioLifecycleInstalled = true;
+
+      function pauseForBackground() {
+        if (!document.hidden) return;
+        try {
+          document.querySelectorAll('audio, video').forEach(function(el) {
+            el.pause();
+          });
+        } catch(e) {}
+        try {
+          if (window.Howler) {
+            window.Howler.pause();
+            if (window.Howler.ctx && window.Howler.ctx.state === 'running') {
+              window.Howler.ctx.suspend();
+            }
+          }
+        } catch(e) {}
+      }
+
+      document.addEventListener('visibilitychange', pauseForBackground, true);
+      window.addEventListener('pagehide', pauseForBackground, true);
+    })();
+""".trimIndent()
 
 enum class RecoveryReason {
     RENDERER_CRASHED,
@@ -69,7 +126,11 @@ class BeastAcademyWebViewController(
     private val recoveryLimiter = RecoveryLimiter()
     
     private var pendingRecovery: Runnable? = null
+    private var pendingWebViewPause: Runnable? = null
     private var isDisposed = false
+    private var isPaused = false
+    private var recreateOnResume = false
+    private var audioLifecycleGeneration = 0L
     
     var filePathCallback: ValueCallback<Array<Uri>>? = null
     var filePickerLauncher: ActivityResultLauncher<Array<String>>? = null
@@ -247,6 +308,7 @@ class BeastAcademyWebViewController(
 
         if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
             WebViewCompat.addDocumentStartJavaScript(wv, speechPolyfill, setOf("*"))
+            WebViewCompat.addDocumentStartJavaScript(wv, WEB_AUDIO_LIFECYCLE_SCRIPT, setOf("*"))
         }
 
         wv.webChromeClient = object : WebChromeClient() {
@@ -330,24 +392,12 @@ class BeastAcademyWebViewController(
                         window.__baResumeHooked = true;
                         document.addEventListener('touchstart', resume, true);
                         document.addEventListener('mousedown', resume, true);
-                        document.addEventListener('visibilitychange', function() {
-                          if (!document.hidden) resume();
-                        });
                       }
-                      resume();
                     })();
                 """.trimIndent(), null)
             }
 
-            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                val url = request?.url?.toString() ?: return false
-                if (isSafeUrl(url)) return false
-                
-                runCatching {
-                    activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                }
-                return true
-            }
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?) = false
 
             override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
                 val didCrash = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -388,12 +438,10 @@ class BeastAcademyWebViewController(
         popupWebViews.add(popup)
         var handled = false
 
-        fun handleExternalUri(uri: Uri): Boolean {
+        fun handleInMainWebView(uri: Uri): Boolean {
             if (handled) return true
             handled = true
-            runCatching {
-                activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri.toString())).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            }
+            currentWebView?.loadUrl(uri.toString())
             destroyPopupWebView(popup)
             return true
         }
@@ -401,7 +449,7 @@ class BeastAcademyWebViewController(
         popup.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 val uri = request?.url ?: return false
-                return handleExternalUri(uri)
+                return handleInMainWebView(uri)
             }
 
             override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
@@ -439,6 +487,14 @@ class BeastAcademyWebViewController(
         if (isDisposed) return
         if (failedView != null && failedView !== currentWebView) {
             destroyMainWebView(failedView)
+            return
+        }
+
+        // Never spin up a fresh renderer while the app is backgrounded. Besides wasting
+        // resources, a newly loaded page could start audio before it receives a pause event.
+        if (isPaused) {
+            destroyMainWebView(failedView ?: currentWebView)
+            recreateOnResume = true
             return
         }
         
@@ -624,40 +680,116 @@ class BeastAcademyWebViewController(
     }
 
     fun onPause() {
+        pauseAudio(forScreenOff = false)
+    }
+
+    fun onScreenOff() {
+        pauseAudio(forScreenOff = true)
+    }
+
+    private fun pauseAudio(forScreenOff: Boolean) {
+        if (isDisposed) return
+
         hideCustomView()
         speechBridge.cancel()
-        
-        val wv = currentWebView ?: return
-        wv.evaluateJavascript("""
-            try {
-              if (window.speechSynthesis) window.speechSynthesis.cancel();
-              document.querySelectorAll('audio, video').forEach(function(el) { el.pause(); });
-              if (window.Howler) {
-                Howler.stop();
-                if (Howler.ctx && Howler.ctx.state === 'running') Howler.ctx.suspend();
-              }
-            } catch(e) {}
-        """.trimIndent(), null)
-        
-        wv.onPause()
-        wv.pauseTimers()
+
+        val wv = currentWebView
+        val audioMuted = setAllWebViewAudioMuted(muted = true)
+
+        // MUTE_AUDIO is the only WebView API that synchronously silences every audio source.
+        // If an old provider lacks it, destroying the renderer is the only reliable fallback
+        // for the explicit screen-off requirement.
+        if (forScreenOff && !audioMuted) {
+            Log.w(TAG, "WebView audio muting is unsupported; destroying WebViews on screen-off")
+            cancelPendingWebViewPause()
+            recreateOnResume = wv != null
+            destroyMainWebView(wv)
+            popupWebViews.toList().forEach { destroyPopupWebView(it) }
+            isPaused = true
+            audioLifecycleGeneration++
+            return
+        }
+
+        if (isPaused) return
+        isPaused = true
+        val generation = ++audioLifecycleGeneration
+        if (wv == null) return
+
+        val timeout = Runnable {
+            pendingWebViewPause = null
+            finishWebViewPause(wv, generation)
+        }
+        pendingWebViewPause = timeout
+        mainHandler.postDelayed(timeout, AUDIO_STATE_CLEANUP_TIMEOUT_MS)
+
+        runCatching {
+            wv.evaluateJavascript(PAUSE_WEB_AUDIO_SCRIPT) {
+                finishWebViewPause(wv, generation)
+            }
+        }.onFailure {
+            Log.w(TAG, "Unable to clean up WebView playback state", it)
+            finishWebViewPause(wv, generation)
+        }
+    }
+
+    private fun finishWebViewPause(wv: WebView, generation: Long) {
+        if (!isPaused || generation != audioLifecycleGeneration || currentWebView !== wv) return
+        cancelPendingWebViewPause()
+        runCatching { wv.onPause() }
+        runCatching { wv.pauseTimers() }
+        popupWebViews.toList().forEach { popup -> runCatching { popup.onPause() } }
+    }
+
+    private fun cancelPendingWebViewPause() {
+        pendingWebViewPause?.let(mainHandler::removeCallbacks)
+        pendingWebViewPause = null
+    }
+
+    private fun setAllWebViewAudioMuted(muted: Boolean): Boolean {
+        val webViews = buildList {
+            currentWebView?.let(::add)
+            addAll(popupWebViews.toList())
+        }
+        val results = webViews.map { setWebViewAudioMuted(it, muted) }
+        return results.all { it }
+    }
+
+    private fun setWebViewAudioMuted(wv: WebView, muted: Boolean): Boolean {
+        if (!WebViewFeature.isFeatureSupported(WebViewFeature.MUTE_AUDIO)) return false
+        return runCatching {
+            WebViewCompat.setAudioMuted(wv, muted)
+            true
+        }.onFailure {
+            Log.w(TAG, "Unable to ${if (muted) "mute" else "unmute"} WebView audio", it)
+        }.getOrDefault(false)
     }
 
     fun onResume() {
+        if (isDisposed) return
+        isPaused = false
+        audioLifecycleGeneration++
+        cancelPendingWebViewPause()
+
         activity.window.enterImmersiveMode()
+
+        if (recreateOnResume) {
+            recreateOnResume = false
+            requestRecovery(RecoveryReason.MANUAL_RELOAD)
+            return
+        }
+
         val wv = currentWebView ?: return
         wv.resumeTimers()
         wv.onResume()
-        
-        wv.evaluateJavascript("""
-            try {
-              if (window.Howler && Howler.ctx && Howler.ctx.state === 'suspended') Howler.ctx.resume();
-            } catch(e) {}
-        """.trimIndent(), null)
+        popupWebViews.toList().forEach { popup ->
+            runCatching { popup.onResume() }
+        }
+        setAllWebViewAudioMuted(muted = false)
     }
 
     fun shutdown() {
         isDisposed = true
+        cancelPendingWebViewPause()
         destroyMainWebView(currentWebView)
         val popups = popupWebViews.toList()
         popups.forEach { destroyPopupWebView(it) }
