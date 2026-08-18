@@ -17,11 +17,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -59,6 +63,9 @@ fun BeastAcademyApp() {
     var showTtsWarning by remember { mutableStateOf(false) }
     var recoveryState by remember { mutableStateOf<BeastAcademyWebViewController.RecoveryState>(BeastAcademyWebViewController.RecoveryState.Healthy) }
     var loadProgress by remember { mutableIntStateOf(0) }
+    // Deliberately not persisted: if Android kills/recreates the Activity while the display is
+    // off, rebuilding the Activity is itself a wake/re-entry and must restore the app.
+    var isCovered by remember { mutableStateOf(false) }
 
     val speechBridge = remember {
         AndroidSpeechSynthesis(context = activity) {
@@ -76,6 +83,33 @@ fun BeastAcademyApp() {
         )
     }
 
+    val currentCoverClosedHandler = rememberUpdatedState {
+        if (!isCovered) {
+            controller.onCoverClosed()
+            isCovered = true
+        }
+    }
+    val coverSensorMonitor = remember {
+        CoverSensorMonitor(activity) {
+            currentCoverClosedHandler.value.invoke()
+        }
+    }
+    val currentCoveredState = rememberUpdatedState(isCovered)
+
+    val originalWindowBrightness = remember { activity.window.attributes.screenBrightness }
+    DisposableEffect(activity) {
+        onDispose {
+            val attributes = activity.window.attributes
+            attributes.screenBrightness = originalWindowBrightness
+            activity.window.attributes = attributes
+        }
+    }
+    LaunchedEffect(isCovered) {
+        val attributes = activity.window.attributes
+        attributes.screenBrightness = if (isCovered) 0f else originalWindowBrightness
+        activity.window.attributes = attributes
+    }
+
     // Link file picker launcher to controller
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments()
@@ -90,36 +124,62 @@ fun BeastAcademyApp() {
     }
 
     DisposableEffect(activity, controller) {
-        val screenOffReceiver = object : BroadcastReceiver() {
+        val screenReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.action == Intent.ACTION_SCREEN_OFF) {
-                    controller.onScreenOff()
+                when (intent?.action) {
+                    Intent.ACTION_SCREEN_OFF -> controller.onScreenOff()
+                    Intent.ACTION_SCREEN_ON -> {
+                        if (currentCoveredState.value) {
+                            isCovered = false
+                            if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                                controller.onResume()
+                                coverSensorMonitor.start()
+                            }
+                        }
+                    }
                 }
             }
         }
 
+        val screenFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_SCREEN_ON)
+        }
+
         ContextCompat.registerReceiver(
             activity,
-            screenOffReceiver,
-            IntentFilter(Intent.ACTION_SCREEN_OFF),
+            screenReceiver,
+            screenFilter,
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
         onDispose {
-            runCatching { activity.unregisterReceiver(screenOffReceiver) }
+            runCatching { activity.unregisterReceiver(screenReceiver) }
         }
     }
 
-    DisposableEffect(lifecycle) {
+    DisposableEffect(lifecycle, coverSensorMonitor) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_PAUSE -> controller.onPause()
-                Lifecycle.Event.ON_RESUME -> controller.onResume()
+                Lifecycle.Event.ON_PAUSE -> {
+                    coverSensorMonitor.stop()
+                    controller.onPause()
+                }
+                Lifecycle.Event.ON_RESUME -> {
+                    if (!currentCoveredState.value) {
+                        controller.onResume()
+                        coverSensorMonitor.start()
+                    }
+                }
                 else -> {}
             }
         }
         lifecycle.addObserver(observer)
+        if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) && !currentCoveredState.value) {
+            coverSensorMonitor.start()
+        }
         onDispose {
+            coverSensorMonitor.stop()
             lifecycle.removeObserver(observer)
             controller.shutdown()
         }
@@ -181,6 +241,24 @@ fun BeastAcademyApp() {
 
         if (showTtsWarning) {
             TtsWarningOverlay()
+        }
+
+        if (isCovered) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .pointerInput(Unit) {
+                        awaitEachGesture {
+                            awaitFirstDown(requireUnconsumed = false)
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                event.changes.forEach { it.consume() }
+                                if (event.changes.none { it.pressed }) break
+                            }
+                        }
+                    }
+            )
         }
     }
 

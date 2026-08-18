@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.view.WindowManager
 import android.webkit.*
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
@@ -684,6 +685,15 @@ class BeastAcademyWebViewController(
     }
 
     fun onScreenOff() {
+        pauseAudio(forScreenOff = true)
+    }
+
+    fun onCoverClosed() {
+        activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        activity.window.decorView.keepScreenOn = false
+        currentWebView?.keepScreenOn = false
+        popupWebViews.forEach { it.keepScreenOn = false }
+        customView?.keepScreenOn = false
         pauseAudio(forScreenOff = true)
     }
 
