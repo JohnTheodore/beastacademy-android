@@ -1,11 +1,13 @@
 package com.example.beast_academy_apk
 
+import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.widget.FrameLayout
@@ -47,12 +49,27 @@ class MainActivity : ComponentActivity() {
         }
 
         enableEdgeToEdge()
+        DiagnosticTrace.record("activity created lockTask=${lockTaskMode()}")
         setContent {
             BeastacademyapkTheme {
                 BeastAcademyApp()
             }
         }
     }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        DiagnosticTrace.record("window focus=$hasFocus lifecycle=${lifecycle.currentState} lockTask=${lockTaskMode()}")
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+            DiagnosticTrace.record("activity touch down lifecycle=${lifecycle.currentState} lockTask=${lockTaskMode()}")
+        }
+        return super.dispatchTouchEvent(event)
+    }
+
+    private fun lockTaskMode(): Int = getSystemService(ActivityManager::class.java)?.lockTaskModeState ?: -1
 }
 
 @Composable
@@ -85,6 +102,7 @@ fun BeastAcademyApp() {
 
     val currentCoverClosedHandler = rememberUpdatedState {
         if (!isCovered) {
+            DiagnosticTrace.record("cover detected lifecycle=${lifecycle.currentState} ${controller.diagnosticState()}")
             controller.onCoverClosed()
             isCovered = true
         }
@@ -127,15 +145,21 @@ fun BeastAcademyApp() {
         val screenReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 when (intent?.action) {
-                    Intent.ACTION_SCREEN_OFF -> controller.onScreenOff()
+                    Intent.ACTION_SCREEN_OFF -> {
+                        DiagnosticTrace.record("screen off covered=${currentCoveredState.value} lifecycle=${lifecycle.currentState} ${controller.diagnosticState()}")
+                        controller.onScreenOff()
+                    }
                     Intent.ACTION_SCREEN_ON -> {
+                        DiagnosticTrace.record("screen on covered=${currentCoveredState.value} lifecycle=${lifecycle.currentState} ${controller.diagnosticState()}")
                         if (currentCoveredState.value) {
                             isCovered = false
                             if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                                DiagnosticTrace.record("screen on resume controller")
                                 controller.onResume()
                                 coverSensorMonitor.start()
                             }
                         }
+                        DiagnosticTrace.record("screen on handled covered=${currentCoveredState.value} ${controller.diagnosticState()}")
                     }
                 }
             }
@@ -162,15 +186,18 @@ fun BeastAcademyApp() {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
+                    DiagnosticTrace.record("activity pause covered=${currentCoveredState.value} ${controller.diagnosticState()}")
                     coverSensorMonitor.stop()
                     controller.onPause()
                 }
                 Lifecycle.Event.ON_RESUME -> {
+                    DiagnosticTrace.record("activity resume covered=${currentCoveredState.value} ${controller.diagnosticState()}")
                     if (!currentCoveredState.value) {
                         controller.onResume()
                         coverSensorMonitor.start()
                     }
                 }
+                Lifecycle.Event.ON_STOP -> DiagnosticTrace.record("activity stop covered=${currentCoveredState.value} ${controller.diagnosticState()}")
                 else -> {}
             }
         }

@@ -11,8 +11,8 @@ android {
         applicationId = "com.example.beast_academy_apk"
         minSdk = 24
         targetSdk = 37
-        versionCode = 11
-        versionName = "0.7.4"
+        versionCode = 12
+        versionName = "0.7.5-diag"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

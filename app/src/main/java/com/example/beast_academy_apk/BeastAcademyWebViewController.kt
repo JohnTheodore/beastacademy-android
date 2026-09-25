@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import android.view.MotionEvent
 import android.webkit.*
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
@@ -135,6 +136,11 @@ class BeastAcademyWebViewController(
     
     var filePathCallback: ValueCallback<Array<Uri>>? = null
     var filePickerLauncher: ActivityResultLauncher<Array<String>>? = null
+
+    fun diagnosticState(): String =
+        "controller paused=$isPaused pendingPause=${pendingWebViewPause != null} " +
+            "recreateOnResume=$recreateOnResume webView=${currentWebView != null} " +
+            "customView=${customView != null} generation=${generation.get()}"
 
     private val speechPolyfill = """
         (function() {
@@ -270,6 +276,15 @@ class BeastAcademyWebViewController(
             ViewGroup.LayoutParams.MATCH_PARENT
         )
         wv.keepEdgeTouchesInApp()
+        if (BuildConfig.DEBUG) {
+            wv.setOnTouchListener { _, event ->
+                if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+                    DiagnosticTrace.record("webview touch down ${diagnosticState()}")
+                }
+                false
+            }
+        }
+        DiagnosticTrace.record("webview created generation=$gen ${diagnosticState()}")
 
         CookieManager.getInstance().apply {
             setAcceptCookie(true)
@@ -485,6 +500,7 @@ class BeastAcademyWebViewController(
     }
 
     fun requestRecovery(reason: RecoveryReason, failedView: WebView? = null) {
+        DiagnosticTrace.record("recovery requested reason=$reason ${diagnosticState()}")
         if (isDisposed) return
         if (failedView != null && failedView !== currentWebView) {
             destroyMainWebView(failedView)
@@ -626,6 +642,7 @@ class BeastAcademyWebViewController(
     }
 
     private fun showCustomView(view: View?, callback: WebChromeClient.CustomViewCallback?) {
+        DiagnosticTrace.record("custom view show requested ${diagnosticState()}")
         if (customView != null) {
             hideCustomView()
         }
@@ -653,10 +670,12 @@ class BeastAcademyWebViewController(
         )
         view.keepEdgeTouchesInApp()
         activity.window.enterImmersiveMode()
+        DiagnosticTrace.record("custom view shown ${diagnosticState()}")
     }
 
     fun hideCustomView() {
         val view = customView ?: return
+        DiagnosticTrace.record("custom view hide ${diagnosticState()}")
         val decor = activity.window.decorView as ViewGroup
         decor.removeView(view)
         customView = null
@@ -681,14 +700,17 @@ class BeastAcademyWebViewController(
     }
 
     fun onPause() {
+        DiagnosticTrace.record("controller onPause ${diagnosticState()}")
         pauseAudio(forScreenOff = false)
     }
 
     fun onScreenOff() {
+        DiagnosticTrace.record("controller onScreenOff ${diagnosticState()}")
         pauseAudio(forScreenOff = true)
     }
 
     fun onCoverClosed() {
+        DiagnosticTrace.record("controller onCoverClosed ${diagnosticState()}")
         activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         activity.window.decorView.keepScreenOn = false
         currentWebView?.keepScreenOn = false
@@ -705,6 +727,7 @@ class BeastAcademyWebViewController(
 
         val wv = currentWebView
         val audioMuted = setAllWebViewAudioMuted(muted = true)
+        DiagnosticTrace.record("pauseAudio screenOff=$forScreenOff audioMuted=$audioMuted ${diagnosticState()}")
 
         // MUTE_AUDIO is the only WebView API that synchronously silences every audio source.
         // If an old provider lacks it, destroying the renderer is the only reliable fallback
@@ -745,8 +768,10 @@ class BeastAcademyWebViewController(
     private fun finishWebViewPause(wv: WebView, generation: Long) {
         if (!isPaused || generation != audioLifecycleGeneration || currentWebView !== wv) return
         cancelPendingWebViewPause()
+        DiagnosticTrace.record("webview pausing generation=$generation ${diagnosticState()}")
         runCatching { wv.onPause() }
         runCatching { wv.pauseTimers() }
+        DiagnosticTrace.record("webview paused timers paused generation=$generation")
         popupWebViews.toList().forEach { popup -> runCatching { popup.onPause() } }
     }
 
@@ -775,6 +800,7 @@ class BeastAcademyWebViewController(
     }
 
     fun onResume() {
+        DiagnosticTrace.record("controller onResume before ${diagnosticState()}")
         if (isDisposed) return
         isPaused = false
         audioLifecycleGeneration++
@@ -791,6 +817,7 @@ class BeastAcademyWebViewController(
         val wv = currentWebView ?: return
         wv.resumeTimers()
         wv.onResume()
+        DiagnosticTrace.record("webview resumed timers resumed ${diagnosticState()}")
         popupWebViews.toList().forEach { popup ->
             runCatching { popup.onResume() }
         }
