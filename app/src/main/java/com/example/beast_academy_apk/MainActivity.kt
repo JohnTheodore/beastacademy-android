@@ -43,6 +43,7 @@ import kotlinx.coroutines.delay
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        DiagnosticTrace.initialize(this)
 
         if (BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true)
@@ -63,10 +64,10 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-            DiagnosticTrace.record("activity touch down lifecycle=${lifecycle.currentState} lockTask=${lockTaskMode()}")
-        }
-        return super.dispatchTouchEvent(event)
+        DiagnosticTrace.touch("activity-dispatch", event)
+        val handled = super.dispatchTouchEvent(event)
+        DiagnosticTrace.touch("activity-return", event, handled)
+        return handled
     }
 
     private fun lockTaskMode(): Int = getSystemService(ActivityManager::class.java)?.lockTaskModeState ?: -1
@@ -223,7 +224,7 @@ fun BeastAcademyApp() {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { factoryContext ->
-                FrameLayout(factoryContext).apply {
+                InputTraceHost(factoryContext).apply {
                     layoutParams = ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT

@@ -268,7 +268,8 @@ class BeastAcademyWebViewController(
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun createMainWebView(): WebView {
-        val wv = WebView(activity)
+        val wv = BeastAcademyWebView(activity)
+        wv.installInputDiagnostics()
         val gen = generation.incrementAndGet()
         
         wv.layoutParams = ViewGroup.LayoutParams(
@@ -721,6 +722,8 @@ class BeastAcademyWebViewController(
 
     private fun pauseAudio(forScreenOff: Boolean) {
         if (isDisposed) return
+
+        (currentWebView as? BeastAcademyWebView)?.cancelActiveTouches("pause screenOff=$forScreenOff")
 
         hideCustomView()
         speechBridge.cancel()

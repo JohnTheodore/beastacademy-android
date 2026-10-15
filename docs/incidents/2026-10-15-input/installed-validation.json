@@ -1,0 +1,20 @@
+{
+  "installedVersion": "0.7.6-input-diag",
+  "versionCode": 13,
+  "nativeDeviceTestsPassed": 9,
+  "unitTestsPassed": 10,
+  "mainLessonDragObserved": true,
+  "isDraggingDuringDrag": true,
+  "pieceIsMovingDuringDrag": true,
+  "puzzleArrangementPreserved": true,
+  "originalInterruptionTrigger": "unknown",
+  "screenOffFollowupDrag": "not validated; further screen locking prohibited by user",
+  "sameDocumentInterruptionRepetitionsPassed": 50,
+  "sameDocumentReloads": 0,
+  "originalScreenTimeoutRestoredMs": 300000,
+  "releaseVersion": "0.7.6",
+  "releaseVersionCode": 13,
+  "releaseAsset": "beastacademy-android-v0.7.6.apk",
+  "unrepairedFrozenDragReproductionPassed": true,
+  "releaseAssetSha256": "762c40573e95d38b1769674b9728d5c24987c9a03b0b791cb04483ccfa6ee2ee"
+}

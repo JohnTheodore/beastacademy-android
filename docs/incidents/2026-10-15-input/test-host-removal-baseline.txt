@@ -1,0 +1,44 @@
+INSTRUMENTATION_STATUS: class=com.example.beast_academy_apk.InputLifecycleInstrumentedTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.example.beast_academy_apk.InputLifecycleInstrumentedTest:
+INSTRUMENTATION_STATUS: test=composeHostRemovalDuringMultiTouchClearsAllContacts
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.example.beast_academy_apk.InputLifecycleInstrumentedTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Compose removal left stale contacts: {"active":[1,2],"cancels":1,"dragMoves":0,"events":[{"active":[0],"changed":[0],"type":"touchstart"},{"active":[0,1],"changed":[1],"type":"touchstart"},{"active":[0,1,2],"changed":[2],"type":"touchstart"},{"active":[1,2],"changed":[0],"type":"touchcancel"}]} expected:<0> but was:<2>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at com.example.beast_academy_apk.InputLifecycleInstrumentedTest.composeHostRemovalDuringMultiTouchClearsAllContacts(InputLifecycleInstrumentedTest.kt:139)
+
+INSTRUMENTATION_STATUS: stream=
+Error in composeHostRemovalDuringMultiTouchClearsAllContacts(com.example.beast_academy_apk.InputLifecycleInstrumentedTest):
+java.lang.AssertionError: Compose removal left stale contacts: {"active":[1,2],"cancels":1,"dragMoves":0,"events":[{"active":[0],"changed":[0],"type":"touchstart"},{"active":[0,1],"changed":[1],"type":"touchstart"},{"active":[0,1,2],"changed":[2],"type":"touchstart"},{"active":[1,2],"changed":[0],"type":"touchcancel"}]} expected:<0> but was:<2>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at com.example.beast_academy_apk.InputLifecycleInstrumentedTest.composeHostRemovalDuringMultiTouchClearsAllContacts(InputLifecycleInstrumentedTest.kt:139)
+
+INSTRUMENTATION_STATUS: test=composeHostRemovalDuringMultiTouchClearsAllContacts
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 1.854
+There was 1 failure:
+1) composeHostRemovalDuringMultiTouchClearsAllContacts(com.example.beast_academy_apk.InputLifecycleInstrumentedTest)
+java.lang.AssertionError: Compose removal left stale contacts: {"active":[1,2],"cancels":1,"dragMoves":0,"events":[{"active":[0],"changed":[0],"type":"touchstart"},{"active":[0,1],"changed":[1],"type":"touchstart"},{"active":[0,1,2],"changed":[2],"type":"touchstart"},{"active":[1,2],"changed":[0],"type":"touchcancel"}]} expected:<0> but was:<2>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at com.example.beast_academy_apk.InputLifecycleInstrumentedTest.composeHostRemovalDuringMultiTouchClearsAllContacts(InputLifecycleInstrumentedTest.kt:139)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

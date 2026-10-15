@@ -9,10 +9,14 @@ android {
 
     defaultConfig {
         applicationId = "com.example.beast_academy_apk"
+        // Run destructive input experiments in a separate sandbox, preserving the child's session.
+        if (providers.gradleProperty("inputLab").orNull == "true") {
+            applicationId = "com.example.beast_academy_apk.inputlab"
+        }
         minSdk = 24
         targetSdk = 37
-        versionCode = 12
-        versionName = "0.7.5-diag"
+        versionCode = 13
+        versionName = "0.7.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

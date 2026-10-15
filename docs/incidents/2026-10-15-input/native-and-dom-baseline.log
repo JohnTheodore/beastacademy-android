@@ -1,0 +1,35 @@
+wall=1792083858126 uptime=42121162 session version=0.7.5-diag wall=1792083858126 uptime=42121162
+wall=1792083858510 uptime=42121547 webview-dffdcfa focus=true
+wall=1792083858986 uptime=42122023 test bounds=2560x1600 location=[0, 0] injection=1024.0,640.0
+wall=1792083859041 uptime=42122078 native stage=host-dispatch action=ACTION_DOWN down=42122024 time=42122024 count=1 pointers=[0:1024.0,640.0] source=4098 device=-1 result=null
+wall=1792083859041 uptime=42122078 native stage=webview-dffdcfa-dispatch action=ACTION_DOWN down=42122024 time=42122024 count=1 pointers=[0:1024.0,640.0] source=4098 device=-1 result=null
+wall=1792083859041 uptime=42122078 native stage=webview-dffdcfa-onTouch action=ACTION_DOWN down=42122024 time=42122024 count=1 pointers=[0:1024.0,640.0] source=4098 device=-1 result=null
+wall=1792083859043 uptime=42122080 native stage=webview-dffdcfa-return action=ACTION_DOWN down=42122024 time=42122024 count=1 pointers=[0:1024.0,640.0] source=4098 device=-1 result=true
+wall=1792083859044 uptime=42122081 native stage=host-return action=ACTION_DOWN down=42122024 time=42122024 count=1 pointers=[0:1024.0,640.0] source=4098 device=-1 result=true
+wall=1792083859051 uptime=42122088 dom webview=dffdcfa origin=https://inputlab.invalid main=true {"type":"pointerdown","wall":1792083859045,"time":689.1000000014901,"hidden":false,"trusted":true,"cancelable":true,"target":"CANVAS","touches":[],"changed":[],"pointer":2,"pointerType":"touch","x":512,"y":320}
+wall=1792083859052 uptime=42122089 dom webview=dffdcfa origin=https://inputlab.invalid main=true {"type":"touchstart","wall":1792083859046,"time":689.1000000014901,"hidden":false,"trusted":true,"cancelable":true,"target":"CANVAS","touches":[{"id":0,"x":512,"y":320,"target":"CANVAS"}],"changed":[{"id":0,"x":512,"y":320,"target":"CANVAS"}]}
+wall=1792083859092 uptime=42122128 native stage=host-dispatch action=ACTION_POINTER_DOWN(1) down=42122024 time=42122123 count=2 pointers=[0:1024.0,640.0;2:1104.0,640.0] source=4098 device=-1 result=null
+wall=1792083859092 uptime=42122129 native stage=webview-dffdcfa-dispatch action=ACTION_POINTER_DOWN(1) down=42122024 time=42122123 count=2 pointers=[0:1024.0,640.0;2:1104.0,640.0] source=4098 device=-1 result=null
+wall=1792083859092 uptime=42122129 native stage=webview-dffdcfa-onTouch action=ACTION_POINTER_DOWN(1) down=42122024 time=42122123 count=2 pointers=[0:1024.0,640.0;2:1104.0,640.0] source=4098 device=-1 result=null
+wall=1792083859094 uptime=42122130 native stage=webview-dffdcfa-return action=ACTION_POINTER_DOWN(1) down=42122024 time=42122123 count=2 pointers=[0:1024.0,640.0;2:1104.0,640.0] source=4098 device=-1 result=true
+wall=1792083859094 uptime=42122131 native stage=host-return action=ACTION_POINTER_DOWN(1) down=42122024 time=42122123 count=2 pointers=[0:1024.0,640.0;2:1104.0,640.0] source=4098 device=-1 result=true
+wall=1792083859095 uptime=42122132 dom webview=dffdcfa origin=https://inputlab.invalid main=true {"type":"pointerdown","wall":1792083859094,"time":788.1000000014901,"hidden":false,"trusted":true,"cancelable":true,"target":"CANVAS","touches":[],"changed":[],"pointer":3,"pointerType":"touch","x":552,"y":320}
+wall=1792083859097 uptime=42122134 dom webview=dffdcfa origin=https://inputlab.invalid main=true {"type":"touchstart","wall":1792083859095,"time":788.1000000014901,"hidden":false,"trusted":true,"cancelable":true,"target":"CANVAS","touches":[{"id":0,"x":512,"y":320,"target":"CANVAS"},{"id":2,"x":552,"y":320,"target":"CANVAS"}],"changed":[{"id":2,"x":552,"y":320,"target":"CANVAS"}]}
+wall=1792083859143 uptime=42122180 native stage=host-dispatch action=ACTION_POINTER_UP(0) down=42122024 time=42122175 count=2 pointers=[0:1024.0,640.0;2:1104.0,640.0] source=4098 device=-1 result=null
+wall=1792083859144 uptime=42122181 native stage=webview-dffdcfa-dispatch action=ACTION_POINTER_UP(0) down=42122024 time=42122175 count=2 pointers=[0:1024.0,640.0;2:1104.0,640.0] source=4098 device=-1 result=null
+wall=1792083859144 uptime=42122181 native stage=webview-dffdcfa-onTouch action=ACTION_POINTER_UP(0) down=42122024 time=42122175 count=2 pointers=[0:1024.0,640.0;2:1104.0,640.0] source=4098 device=-1 result=null
+wall=1792083859145 uptime=42122182 native stage=webview-dffdcfa-return action=ACTION_POINTER_UP(0) down=42122024 time=42122175 count=2 pointers=[0:1024.0,640.0;2:1104.0,640.0] source=4098 device=-1 result=true
+wall=1792083859146 uptime=42122183 native stage=host-return action=ACTION_POINTER_UP(0) down=42122024 time=42122175 count=2 pointers=[0:1024.0,640.0;2:1104.0,640.0] source=4098 device=-1 result=true
+wall=1792083859148 uptime=42122185 dom webview=dffdcfa origin=https://inputlab.invalid main=true {"type":"pointerup","wall":1792083859146,"time":840.1000000014901,"hidden":false,"trusted":true,"cancelable":true,"target":"CANVAS","touches":[],"changed":[],"pointer":2,"pointerType":"touch","x":512,"y":320}
+wall=1792083859149 uptime=42122185 dom webview=dffdcfa origin=https://inputlab.invalid main=true {"type":"touchend","wall":1792083859147,"time":840.1000000014901,"hidden":false,"trusted":true,"cancelable":true,"target":"CANVAS","touches":[{"id":2,"x":552,"y":320,"target":"CANVAS"}],"changed":[{"id":0,"x":512,"y":320,"target":"CANVAS"}]}
+wall=1792083859209 uptime=42122246 native stage=host-dispatch action=ACTION_CANCEL down=42122246 time=42122246 count=1 pointers=[0:0.0,0.0] source=4098 device=0 result=null
+wall=1792083859210 uptime=42122246 native stage=webview-dffdcfa-dispatch action=ACTION_CANCEL down=42122246 time=42122246 count=1 pointers=[0:0.0,0.0] source=4098 device=0 result=null
+wall=1792083859210 uptime=42122247 native stage=webview-dffdcfa-onTouch action=ACTION_CANCEL down=42122246 time=42122246 count=1 pointers=[0:0.0,0.0] source=4098 device=0 result=null
+wall=1792083859211 uptime=42122248 native stage=webview-dffdcfa-return action=ACTION_CANCEL down=42122246 time=42122246 count=1 pointers=[0:0.0,0.0] source=4098 device=0 result=true
+wall=1792083859211 uptime=42122248 native stage=host-return action=ACTION_CANCEL down=42122246 time=42122246 count=1 pointers=[0:0.0,0.0] source=4098 device=0 result=true
+wall=1792083859212 uptime=42122249 webview-dffdcfa detached
+wall=1792083859224 uptime=42122261 dom webview=dffdcfa origin=https://inputlab.invalid main=true {"type":"visibilitychange","wall":1792083859221,"time":923.5,"hidden":true,"trusted":true,"cancelable":false,"touches":[],"changed":[]}
+wall=1792083859442 uptime=42122479 dom webview=dffdcfa origin=https://inputlab.invalid main=true {"type":"visibilitychange","wall":1792083859427,"time":1129.3999999985099,"hidden":false,"trusted":true,"cancelable":false,"touches":[],"changed":[]}
+wall=1792083859471 uptime=42122508 webview-dffdcfa focus=false
+wall=1792083860313 uptime=42123350 webview-dffdcfa detached
+wall=1792083860354 uptime=42123391 dom webview=dffdcfa origin=https://inputlab.invalid main=true {"type":"visibilitychange","wall":1792083860305,"time":2006.8999999985099,"hidden":true,"trusted":true,"cancelable":false,"touches":[],"changed":[]}
