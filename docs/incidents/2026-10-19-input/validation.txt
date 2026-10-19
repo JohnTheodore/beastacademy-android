@@ -1,0 +1,74 @@
+Local validation — 2026-10-19
+============================
+No APK was installed over the child's app. No physical-tablet wake/input/lock,
+reload, provider change, or restart was used for this refactor. The earlier
+user-confirmed live workaround was left in place.
+
+Build/check environment:
+- Mac-local source copy: /Users/jt/tmp/beast-input-20261019-build
+- JDK: Android Studio bundled JBR; Gradle 9.6.1; compile/target SDK 37.
+- Checks: :app:testDebugUnitTest :app:lintDebug :app:lintRelease
+  :app:assembleDebug :app:assembleRelease :app:assembleDebugAndroidTest
+- 16 unit tests, zero failures/errors. Both lint tasks and all builds passed.
+  Nonfatal lint warnings remain; this is not a zero-warning claim.
+
+Isolated native environment:
+- Read-only/headless Pixel_Tablet AVD, Android 15 / API 35.
+- Google WebView 147.0.7727.138; NOT the physical tablet's Vanadium 155.
+- App/test packages end in .inputlab / .inputlab.test.
+- Dedicated Mac ADB server on port 5040; emulator-5580.
+- Final broad regression run: 14 tests passed, 95.617 seconds. Includes
+  native/legacy-Compose repeated multitouch, interrupted/nonzero cancellation,
+  50 host interruptions, physical move tails, native chrome updates during
+  a gesture, same-document live recovery/undo, real Activity pause/resume and
+  stale-generation callbacks, and 20 dense five-finger replays with the
+  debug-only canvas-claiming candidate.
+- New targeted diagnostic run: automatic phantom-contact snapshot plus
+  end-to-end native/DOM export checks passed, 2 tests / 7.175 seconds.
+- Final signed non-debuggable .inputlab release run: Activity/session and
+  export/inspection tests passed, 2 tests / 9.405 seconds. Test signing used
+  only the local debug key for this isolated package; no release was published.
+- Separate ordinary test-APK UID: export and inspection control both denied
+  with android.permission.DUMP errors. Direct run-as on the release package
+  correctly returned "package not debuggable".
+- Host capture script: valid private ZIP, unchanged PID 12389, installed base
+  APK copied, checksums generated, private file modes. Node read-only CDP
+  state capture also verified on the live isolated release WebView after
+  temporary privileged enabling; inspection was disabled afterward.
+
+Host browser policy candidate:
+- scripts/test-puzzle-touch-policy.mjs passed using Playwright/Chromium 156.
+- Trusted drag outside canvas; touch taps; genuine multitouch identifiers;
+  outside button/scroll; dynamic insertion/removal/moving; idempotent install;
+  restoring prior style and listener behavior on undo.
+- This checks the interaction contract, not native Vanadium scheduling.
+
+Failed attempts were preserved:
+- First broad stress rerun had two intermittent legacy Compose-reinsertion
+  tests with a missing fresh drag and no stranded DOM contacts. Those tests
+  did not await attachment/layout readiness; after an explicit readiness
+  condition the complete broad rerun passed. A focused pre-fix rerun passed,
+  so do not mislabel those failures as a provider reproduction.
+- Export fixture setup initially used an unknown tool type and later injected
+  while the real Activity's recovery card still covered an unpainted canvas.
+  Native traces distinguished Activity receipt from WebView receipt. It now
+  uses a genuine finger stream, a painted fixture, and waits for healthy chrome.
+- A trace identity assertion initially compared two differently formatted
+  floating-point strings; it now parses the document timestamp numerically.
+- The standalone unprivileged probe initially depended on the target APK's
+  Kotlin runtime; it was rewritten in Java to run under its own ordinary UID.
+- Mac-to-VM CDP testing initially used a DNS Host header rejected by Chromium;
+  the numeric host address worked. Normal capture uses a loopback IP.
+
+Evidence:
+Durable private archive:
+/home/jt/.local/state/beastacademy/incidents/2026-10-19-initial/follow-up/
+Retains original input/provider experiments, failed and passing outputs, source
+harnesses and traces, release ZIP/APK captures, CDP observations, permission
+probe output and final build logs. SHA256SUMS covers the archive.
+
+Remaining:
+- Prove the natural Vanadium internal trigger in a full provider.
+- Validate candidate prevention and the refactor on the actual provider and
+  real lesson controls after explicit user authorization.
+- Install no update or recovery merely to obtain a passing test.

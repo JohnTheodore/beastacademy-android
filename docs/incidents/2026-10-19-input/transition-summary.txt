@@ -1,0 +1,88 @@
+10-19 08:53:58.277 20242 20242 I BeastAcademyDiag: wall=1792414438276 uptime=28666667 native stage=webview-3a6483f-onTouch action=ACTION_DOWN down=28666639 time=28666639 count=1 pointers=[0:1698.0,397.0] source=4098 device=4 result=null
+10-19 08:53:58.296 20242 20242 I BeastAcademyDiag: wall=1792414438296 uptime=28666686 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_DOWN(1) down=28666639 time=28666646 count=2 pointers=[0:1698.0,397.0;1:1371.0,552.0] source=4098 device=4 result=null
+10-19 08:53:58.318 20242 20242 I BeastAcademyDiag: wall=1792414438318 uptime=28666708 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_DOWN(2) down=28666639 time=28666663 count=3 pointers=[0:1698.0,397.0;1:1371.0,552.0;2:2141.0,549.0] source=4098 device=4 result=null
+10-19 08:53:58.331 20242 20242 I BeastAcademyDiag: wall=1792414438331 uptime=28666721 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_DOWN(3) down=28666639 time=28666663 count=4 pointers=[0:1698.0,397.0;1:1371.0,552.0;2:2141.0,549.0;3:1395.0,1312.0] source=4098 device=4 result=null
+10-19 08:53:58.338 DOM pointerdown ids=[] changed=[] p=263
+10-19 08:53:58.339 DOM touchstart ids=[0] changed=[0] p=None
+10-19 08:53:58.339 DOM pointerdown ids=[] changed=[] p=264
+10-19 08:53:58.340 DOM touchstart ids=[0, 1] changed=[1] p=None
+10-19 08:53:58.340 DOM pointerdown ids=[] changed=[] p=265
+10-19 08:53:58.340 DOM touchstart ids=[0, 1, 2] changed=[2] p=None
+10-19 08:53:58.341 DOM pointerdown ids=[] changed=[] p=266
+10-19 08:53:58.341 DOM touchstart ids=[0, 1, 2, 3] changed=[3] p=None
+10-19 08:53:58.384 DOM pointercancel ids=[] changed=[] p=263
+10-19 08:53:58.385 DOM pointercancel ids=[] changed=[] p=264
+10-19 08:53:58.386 DOM pointercancel ids=[] changed=[] p=265
+10-19 08:53:58.386 DOM pointercancel ids=[] changed=[] p=266
+10-19 08:53:58.450 20242 20242 I BeastAcademyDiag: wall=1792414438450 uptime=28666840 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_UP(0) down=28666639 time=28666829 count=4 pointers=[0:1716.0,360.0;1:1356.0,532.0;2:2141.0,549.0;3:1395.0,1312.0] source=4098 device=4 result=null
+10-19 08:53:58.472 DOM touchend ids=[1, 2, 3] changed=[0] p=None
+10-19 08:53:58.531 20242 20242 I BeastAcademyDiag: wall=1792414438531 uptime=28666921 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_DOWN(0) down=28666639 time=28666913 count=4 pointers=[0:1806.0,276.0;1:1342.0,488.0;2:2141.0,549.0;3:1373.0,1325.0] source=4098 device=4 result=null
+10-19 08:53:58.535 DOM touchstart ids=[0, 1, 2, 3] changed=[0] p=None
+10-19 08:53:58.908 20242 20242 I BeastAcademyDiag: wall=1792414438908 uptime=28667298 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_UP(3) down=28666639 time=28667288 count=4 pointers=[0:1806.0,276.0;1:1358.0,428.0;2:2235.0,476.0;3:1291.3623,1396.3623] source=4098 device=4 result=null
+10-19 08:53:58.918 DOM touchend ids=[0, 1, 2] changed=[3] p=None
+10-19 08:53:58.964 20242 20242 I BeastAcademyDiag: wall=1792414438964 uptime=28667354 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_UP(1) down=28666639 time=28667345 count=3 pointers=[0:1806.0,277.0;1:1371.0,438.0;2:2235.0,472.63184] source=4098 device=4 result=null
+10-19 08:53:58.972 20242 20242 I BeastAcademyDiag: wall=1792414438972 uptime=28667362 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_UP(0) down=28666639 time=28667354 count=2 pointers=[0:1806.0,277.0;2:2235.0,472.63184] source=4098 device=4 result=null
+10-19 08:53:58.980 DOM touchend ids=[0, 2] changed=[1] p=None
+10-19 08:53:58.980 DOM touchend ids=[2] changed=[0] p=None
+10-19 08:53:59.001 20242 20242 I BeastAcademyDiag: wall=1792414439001 uptime=28667391 native stage=webview-3a6483f-onTouch action=ACTION_UP down=28666639 time=28667387 count=1 pointers=[2:2236.2256,473.0] source=4098 device=4 result=null
+10-19 08:53:59.004 DOM touchend ids=[] changed=[2] p=None
+10-19 08:53:59.396 20242 20242 I BeastAcademyDiag: wall=1792414439396 uptime=28667786 native stage=webview-3a6483f-onTouch action=ACTION_DOWN down=28667761 time=28667761 count=1 pointers=[0:1530.0,844.0] source=4098 device=4 result=null
+10-19 08:53:59.413 DOM pointerdown ids=[] changed=[] p=267
+10-19 08:53:59.415 DOM touchstart ids=[0] changed=[0] p=None
+10-19 08:53:59.462 20242 20242 I BeastAcademyDiag: wall=1792414439462 uptime=28667852 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_DOWN(1) down=28667761 time=28667844 count=2 pointers=[0:1518.0,801.0;1:1766.0,834.0] source=4098 device=4 result=null
+10-19 08:53:59.479 DOM pointerdown ids=[] changed=[] p=268
+10-19 08:53:59.480 DOM touchstart ids=[0, 1] changed=[1] p=None
+10-19 08:53:59.482 DOM pointercancel ids=[] changed=[] p=267
+10-19 08:53:59.483 DOM pointercancel ids=[] changed=[] p=268
+10-19 08:53:59.498 20242 20242 I BeastAcademyDiag: wall=1792414439498 uptime=28667888 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_DOWN(2) down=28667761 time=28667877 count=3 pointers=[0:1516.0,768.0;1:1777.0,820.0;2:1090.0,1276.0] source=4098 device=4 result=null
+10-19 08:53:59.504 DOM touchstart ids=[0, 1, 2] changed=[2] p=None
+10-19 08:53:59.517 20242 20242 I BeastAcademyDiag: wall=1792414439517 uptime=28667907 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_DOWN(3) down=28667761 time=28667894 count=4 pointers=[0:1517.0,760.0;1:1786.0,814.0;2:1090.0,1276.0;3:1275.0,735.0] source=4098 device=4 result=null
+10-19 08:53:59.528 DOM touchstart ids=[0, 1, 2, 3] changed=[3] p=None
+10-19 08:53:59.587 20242 20242 I BeastAcademyDiag: wall=1792414439587 uptime=28667978 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_DOWN(4) down=28667761 time=28667960 count=5 pointers=[0:1533.0,704.0;1:1837.0,789.0;2:1079.0,1288.0;3:1270.0,726.0;4:2139.0,1021.0] source=4098 device=4 result=null
+10-19 08:53:59.595 DOM touchstart ids=[0, 1, 2, 3, 4] changed=[4] p=None
+10-19 08:53:59.612 20242 20242 I BeastAcademyDiag: wall=1792414439612 uptime=28668003 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_UP(4) down=28667761 time=28667986 count=5 pointers=[0:1536.0,690.0;1:1844.0,782.0;2:1064.0,1309.0;3:1265.0,712.0;4:2139.0,1021.0] source=4098 device=4 result=null
+10-19 08:53:59.623 DOM touchend ids=[0, 1, 2, 3] changed=[4] p=None
+10-19 08:53:59.889 20242 20242 I BeastAcademyDiag: wall=1792414439889 uptime=28668279 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_DOWN(4) down=28667761 time=28668269 count=5 pointers=[0:1590.0,549.0;1:1969.0,709.0;2:872.0,1459.0;3:1239.0,649.0;4:2208.0,1148.0] source=4098 device=4 result=null
+10-19 08:53:59.896 DOM touchstart ids=[0, 1, 2, 3, 4] changed=[4] p=None
+10-19 08:53:59.911 20242 20242 I BeastAcademyDiag: wall=1792414439911 uptime=28668301 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_UP(0) down=28667761 time=28668293 count=5 pointers=[0:1685.0,503.0;1:1978.0,709.0;2:868.0,1462.0;3:1239.0,647.0;4:2208.0,1148.0] source=4098 device=4 result=null
+10-19 08:53:59.914 DOM touchend ids=[1, 2, 3, 4] changed=[0] p=None
+10-19 08:53:59.944 20242 20242 I BeastAcademyDiag: wall=1792414439944 uptime=28668334 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_UP(3) down=28667761 time=28668326 count=4 pointers=[1:1987.0,709.0;2:864.0,1465.0;3:1242.0,643.0;4:2208.0,1148.0] source=4098 device=4 result=null
+10-19 08:53:59.948 DOM touchend ids=[1, 2, 3] changed=[4] p=None
+10-19 08:53:59.970 20242 20242 I BeastAcademyDiag: wall=1792414439970 uptime=28668360 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_UP(0) down=28667761 time=28668352 count=3 pointers=[1:1989.0,709.0;2:864.0,1469.0;3:1245.0,641.0] source=4098 device=4 result=null
+10-19 08:53:59.975 20242 20242 I BeastAcademyDiag: wall=1792414439975 uptime=28668365 native stage=webview-3a6483f-onTouch action=ACTION_POINTER_UP(0) down=28667761 time=28668360 count=2 pointers=[2:864.0,1469.0;3:1245.0,641.0] source=4098 device=4 result=null
+10-19 08:53:59.979 DOM touchend ids=[2, 3] changed=[1] p=None
+10-19 08:53:59.979 DOM touchend ids=[3] changed=[2] p=None
+10-19 08:53:59.992 20242 20242 I BeastAcademyDiag: wall=1792414439992 uptime=28668382 native stage=webview-3a6483f-onTouch action=ACTION_UP down=28667761 time=28668376 count=1 pointers=[3:1245.0,641.0] source=4098 device=4 result=null
+10-19 08:53:59.998 DOM touchend ids=[1, 2] changed=[3] p=None
+10-19 08:54:07.316 20242 20242 I BeastAcademyDiag: wall=1792414447315 uptime=28675706 native stage=webview-3a6483f-onTouch action=ACTION_DOWN down=28675662 time=28675662 count=1 pointers=[0:1314.0,597.0] source=4098 device=4 result=null
+10-19 08:54:07.348 DOM touchstart ids=[0, 1, 2] changed=[0] p=None
+10-19 08:54:08.532 20242 20242 I BeastAcademyDiag: wall=1792414448532 uptime=28676922 native stage=webview-3a6483f-onTouch action=ACTION_UP down=28675662 time=28676909 count=1 pointers=[0:1304.0,742.0] source=4098 device=4 result=null
+10-19 08:54:08.542 DOM touchend ids=[1, 2] changed=[0] p=None
+10-19 08:54:08.927 20242 20242 I BeastAcademyDiag: wall=1792414448926 uptime=28677317 native stage=webview-3a6483f-onTouch action=ACTION_DOWN down=28677292 time=28677292 count=1 pointers=[0:1328.0,573.0] source=4098 device=4 result=null
+10-19 08:54:08.944 DOM touchstart ids=[0, 1, 2] changed=[0] p=None
+10-19 08:54:09.508 20242 20242 I BeastAcademyDiag: wall=1792414449508 uptime=28677898 native stage=webview-3a6483f-onTouch action=ACTION_UP down=28677292 time=28677890 count=1 pointers=[0:1252.0,713.0] source=4098 device=4 result=null
+10-19 08:54:09.515 DOM touchend ids=[1, 2] changed=[0] p=None
+10-19 08:54:10.421 20242 20242 I BeastAcademyDiag: wall=1792414450421 uptime=28678811 native stage=webview-3a6483f-onTouch action=ACTION_DOWN down=28678789 time=28678789 count=1 pointers=[0:1272.0,593.0] source=4098 device=4 result=null
+10-19 08:54:10.437 DOM touchstart ids=[0, 1, 2] changed=[0] p=None
+10-19 08:54:11.000 20242 20242 I BeastAcademyDiag: wall=1792414451000 uptime=28679390 native stage=webview-3a6483f-onTouch action=ACTION_UP down=28678789 time=28679380 count=1 pointers=[0:1412.0,859.0] source=4098 device=4 result=null
+10-19 08:54:11.006 DOM touchend ids=[1, 2] changed=[0] p=None
+10-19 08:54:11.340 20242 20242 I BeastAcademyDiag: wall=1792414451340 uptime=28679730 native stage=webview-3a6483f-onTouch action=ACTION_DOWN down=28679713 time=28679713 count=1 pointers=[0:1328.0,590.0] source=4098 device=4 result=null
+10-19 08:54:11.351 DOM touchstart ids=[0, 1, 2] changed=[0] p=None
+10-19 08:54:11.394 20242 20242 I BeastAcademyDiag: wall=1792414451394 uptime=28679784 native stage=webview-3a6483f-onTouch action=ACTION_UP down=28679713 time=28679779 count=1 pointers=[0:1323.8154,591.39453] source=4098 device=4 result=null
+10-19 08:54:11.400 DOM touchend ids=[1, 2] changed=[0] p=None
+10-19 08:54:11.604 20242 20242 I BeastAcademyDiag: wall=1792414451604 uptime=28679994 native stage=webview-3a6483f-onTouch action=ACTION_DOWN down=28679987 time=28679987 count=1 pointers=[0:1224.0,590.0] source=4098 device=4 result=null
+10-19 08:54:11.614 DOM touchstart ids=[0, 1, 2] changed=[0] p=None
+10-19 08:54:13.016 20242 20242 I BeastAcademyDiag: wall=1792414453016 uptime=28681406 native stage=webview-3a6483f-onTouch action=ACTION_UP down=28679987 time=28681400 count=1 pointers=[0:1369.0,826.0] source=4098 device=4 result=null
+10-19 08:54:13.021 DOM touchend ids=[1, 2] changed=[0] p=None
+10-19 08:54:14.074 20242 20242 I BeastAcademyDiag: wall=1792414454074 uptime=28682464 native stage=webview-3a6483f-onTouch action=ACTION_DOWN down=28682432 time=28682432 count=1 pointers=[0:1374.0,1322.0] source=4098 device=4 result=null
+10-19 08:54:14.090 DOM touchstart ids=[0, 1, 2] changed=[0] p=None
+10-19 08:54:14.129 20242 20242 I BeastAcademyDiag: wall=1792414454128 uptime=28682519 native stage=webview-3a6483f-onTouch action=ACTION_UP down=28682432 time=28682515 count=1 pointers=[0:1374.0,1322.0] source=4098 device=4 result=null
+10-19 08:54:14.136 DOM touchend ids=[1, 2] changed=[0] p=None
+10-19 08:54:16.298 20242 20242 I BeastAcademyDiag: wall=1792414456297 uptime=28684687 native stage=webview-3a6483f-onTouch action=ACTION_DOWN down=28684654 time=28684654 count=1 pointers=[0:707.0,1401.0] source=4098 device=4 result=null
+10-19 08:54:16.313 DOM touchstart ids=[0, 1, 2] changed=[0] p=None
+10-19 08:54:16.341 20242 20242 I BeastAcademyDiag: wall=1792414456341 uptime=28684731 native stage=webview-3a6483f-onTouch action=ACTION_UP down=28684654 time=28684727 count=1 pointers=[0:707.0,1401.0] source=4098 device=4 result=null
+10-19 08:54:16.345 DOM touchend ids=[1, 2] changed=[0] p=None
+10-19 08:54:16.781 20242 20242 I BeastAcademyDiag: wall=1792414456781 uptime=28685171 native stage=webview-3a6483f-onTouch action=ACTION_DOWN down=28685153 time=28685153 count=1 pointers=[0:1172.0,990.0] source=4098 device=4 result=null
+10-19 08:54:16.790 DOM touchstart ids=[0, 1, 2] changed=[0] p=None
+10-19 08:54:16.816 20242 20242 I BeastAcademyDiag: wall=1792414456816 uptime=28685207 native stage=webview-3a6483f-onTouch action=ACTION_UP down=28685153 time=28685202 count=1 pointers=[0:1172.0,990.0] source=4098 device=4 result=null
+10-19 08:54:16.820 DOM touchend ids=[1, 2] changed=[0] p=None

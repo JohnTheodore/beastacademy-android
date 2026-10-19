@@ -107,7 +107,23 @@ class InputLifecycleInstrumentedTest {
         send(MotionEvent.ACTION_UP, 1, requireDelivery = requireDelivery)
     }
 
+    private fun awaitInputHost(scenario: ActivityScenario<InputLabActivity>) {
+        val deadline = SystemClock.uptimeMillis() + 10000
+        while (SystemClock.uptimeMillis() < deadline) {
+            var ready = false
+            scenario.onActivity {
+                val view = it.webView
+                ready = view.isAttachedToWindow && view.isShown && view.hasWindowFocus() &&
+                    view.width > 200 && view.height > 200 && !view.isLayoutRequested
+            }
+            if (ready) return
+            SystemClock.sleep(16)
+        }
+        error("Input host was not attached, visible, focused, and laid out")
+    }
+
     private fun assertDrags(scenario: ActivityScenario<InputLabActivity>) {
+        awaitInputHost(scenario)
         val previous = snapshot(scenario).getInt("dragMoves")
         send(MotionEvent.ACTION_DOWN, 1)
         send(MotionEvent.ACTION_MOVE, 1, 60f)
@@ -152,6 +168,7 @@ class InputLifecycleInstrumentedTest {
             releaseThree()
             scenario.onActivity { it.showHost = true }
             instrumentation.waitForIdleSync()
+            awaitInputHost(scenario)
             assertEquals("Compose removal left stale contacts: $removed", 0, removed.getJSONArray("active").length())
             assertDrags(scenario)
         }
@@ -181,6 +198,7 @@ class InputLifecycleInstrumentedTest {
             send(MotionEvent.ACTION_UP, 1, ids = intArrayOf(2), requireDelivery = false)
             scenario.onActivity { it.showHost = true }
             instrumentation.waitForIdleSync()
+            awaitInputHost(scenario)
             assertEquals("Dummy cancel missed nonzero pointer: $removed", 0, removed.getJSONArray("active").length())
             assertDrags(scenario)
         }
@@ -199,6 +217,7 @@ class InputLifecycleInstrumentedTest {
             send(MotionEvent.ACTION_UP, 1, ids = intArrayOf(2), requireDelivery = false)
             scenario.onActivity { it.showHost = true }
             instrumentation.waitForIdleSync()
+            awaitInputHost(scenario)
             assertEquals("Baseline must reproduce the phantom finger", "[2]", interrupted.getJSONArray("active").toString())
 
             val before = snapshot(scenario).getInt("dragMoves")
@@ -246,11 +265,140 @@ class InputLifecycleInstrumentedTest {
                 send(MotionEvent.ACTION_UP, 1, ids = intArrayOf(2), requireDelivery = false)
                 scenario.onActivity { it.showHost = true }
                 instrumentation.waitForIdleSync()
+                awaitInputHost(scenario)
                 assertEquals("Attempt $attempt stranded contact: $interrupted", 0, interrupted.getJSONArray("active").length())
                 assertDrags(scenario)
                 assertEquals("Test unexpectedly reloaded the document", originalDocument, evaluate(scenario, "performance.timeOrigin"))
             }
             DiagnosticTrace.record("test 50 interruptions passed with unchanged document timeOrigin=$originalDocument")
+        }
+    }
+
+    @Test fun nativeChromeChangesDuringGestureKeepDocumentAndAllPointers() {
+        launch(nativeHost = true).use { scenario ->
+            val origin = evaluate(scenario, "performance.timeOrigin")
+            var initialView: BeastAcademyWebView? = null
+            scenario.onActivity { initialView = it.webView }
+            pressThree()
+            scenario.onActivity { activity ->
+                val chrome = checkNotNull(activity.nativeChrome)
+                repeat(10) { chrome.setProgress(it * 10) }
+                chrome.showTtsWarning()
+                chrome.setRecoveryState(BeastAcademyWebViewController.RecoveryState.HungWaiting)
+                chrome.setRecoveryState(BeastAcademyWebViewController.RecoveryState.Healthy)
+                assertSame(initialView, activity.webView)
+                assertSame(chrome.browserHost, activity.webView.parent)
+                assertTrue(activity.webView.isAttachedToWindow)
+            }
+            send(MotionEvent.ACTION_MOVE, 3, 30f)
+            assertEquals(3, snapshot(scenario).getJSONArray("active").length())
+            releaseThree()
+            assertDrags(scenario)
+            assertEquals(origin, evaluate(scenario, "performance.timeOrigin"))
+        }
+    }
+
+    @Test fun cancellationDropsPhysicalMoveTailUntilNextDown() {
+        launch(nativeHost = true).use { scenario ->
+            val origin = evaluate(scenario, "performance.timeOrigin")
+            pressThree()
+            scenario.onActivity { it.webView.cancelActiveTouches("test interruption") }
+            val cancelled = snapshot(scenario)
+            assertEquals(0, cancelled.getJSONArray("active").length())
+            send(MotionEvent.ACTION_MOVE, 3, 30f)
+            releaseThree()
+            assertEquals("A physical tail must not reenter Blink", cancelled.getJSONArray("events").length(),
+                snapshot(scenario).getJSONArray("events").length())
+            assertDrags(scenario)
+            assertEquals(origin, evaluate(scenario, "performance.timeOrigin"))
+        }
+    }
+
+    @Test fun confirmedPhantomContactsPreserveTransitionWithoutReset() {
+        launch(repairCancellation = false).use { scenario ->
+            val origin = evaluate(scenario, "performance.timeOrigin")
+            var viewId = ""
+            scenario.onActivity { viewId = Integer.toHexString(System.identityHashCode(it.webView)) }
+            send(MotionEvent.ACTION_DOWN, 1)
+            send(MotionEvent.ACTION_POINTER_DOWN or (1 shl 8), 2, ids = intArrayOf(0, 2))
+            send(MotionEvent.ACTION_POINTER_UP, 2, ids = intArrayOf(0, 2))
+            scenario.onActivity { it.showHost = false }
+            instrumentation.waitForIdleSync()
+            SystemClock.sleep(150)
+            assertEquals("Baseline must strand a real contact first", "[2]", snapshot(scenario).getJSONArray("active").toString())
+            send(MotionEvent.ACTION_UP, 1, ids = intArrayOf(2), requireDelivery = false)
+            scenario.onActivity { it.showHost = true }
+            awaitInputHost(scenario)
+            send(MotionEvent.ACTION_DOWN, 1)
+            send(MotionEvent.ACTION_MOVE, 1, 60f)
+            send(MotionEvent.ACTION_UP, 1, 60f)
+            val file = java.io.File(instrumentation.targetContext.filesDir, "input-trace/suspected-stale-touch.log")
+            val deadline = SystemClock.uptimeMillis() + 5000
+            var trace = ""
+            while (SystemClock.uptimeMillis() < deadline) {
+                trace = if (file.exists()) file.readText() else ""
+                if (trace.contains("POSSIBLE STALE TOUCH webview=$viewId document=")) break
+                SystemClock.sleep(25)
+            }
+            assertTrue("No automatic snapshot for the confirmed failed document", trace.contains("POSSIBLE STALE TOUCH webview=$viewId document="))
+            assertTrue("Snapshot must retain provider identity even after the ring rotates", trace.startsWith("session package=") && trace.contains("providerVersion="))
+            assertTrue("Snapshot must include the native transition", trace.contains("stage=webview-$viewId-dispatch action=ACTION_DOWN"))
+            assertTrue("Snapshot must include DOM evidence", trace.contains("dom webview=$viewId"))
+            assertEquals("Recorder must leave the failure available", "[2]", snapshot(scenario).getJSONArray("active").toString())
+            assertEquals("Recording must not reload", origin, evaluate(scenario, "performance.timeOrigin"))
+        }
+    }
+
+    @Test fun liveRecoveryFiltersOnlyKnownPhantomContactsWithoutReload() {
+        launch(repairCancellation = false).use { scenario ->
+            val origin = evaluate(scenario, "performance.timeOrigin")
+            evaluate(scenario, """
+              window.fixtureEngine={moves:0,onMouseEvent(event){
+                if(event.touches.length>1)return;
+                if(event.type!=='touchstart')event.preventDefault();
+                if(event.type==='touchmove'&&event.touches.length===1){
+                  if(!(event instanceof TouchEvent)||!event.isTrusted||!event.currentTarget)throw Error('Invalid event facade');
+                  this.moves++;
+                }
+              }};
+              for(const type of ['touchstart','touchmove','touchend'])document.querySelector('canvas').addEventListener(type,event=>fixtureEngine.onMouseEvent(event),{passive:false});
+            """.trimIndent())
+            send(MotionEvent.ACTION_DOWN, 1)
+            send(MotionEvent.ACTION_POINTER_DOWN or (1 shl 8), 2, ids = intArrayOf(0, 2))
+            send(MotionEvent.ACTION_POINTER_UP, 2, ids = intArrayOf(0, 2))
+            scenario.onActivity { it.showHost = false }
+            instrumentation.waitForIdleSync()
+            SystemClock.sleep(150)
+            assertEquals("Interruption must first strand the baseline contact", "[2]", snapshot(scenario).getJSONArray("active").toString())
+            send(MotionEvent.ACTION_UP, 1, ids = intArrayOf(2), requireDelivery = false)
+            scenario.onActivity { it.showHost = true }
+            instrumentation.waitForIdleSync()
+            awaitInputHost(scenario)
+            assertEquals("[2]", snapshot(scenario).getJSONArray("active").toString())
+            fun drag() {
+                send(MotionEvent.ACTION_DOWN, 1)
+                send(MotionEvent.ACTION_MOVE, 1, 60f)
+                send(MotionEvent.ACTION_UP, 1, 60f)
+            }
+            drag()
+            assertEquals("0", evaluate(scenario, "fixtureEngine.moves"))
+            val source = instrumentation.targetContext.assets.open("live-touch-recovery.js").bufferedReader().use { it.readText() }
+            evaluate(scenario, "($source)(fixtureEngine,[2]); true")
+            drag()
+            assertTrue(evaluate(scenario, "fixtureEngine.moves").toInt() > 0)
+            assertEquals("Raw browser state must remain available", "[2]", snapshot(scenario).getJSONArray("active").toString())
+            assertEquals(origin, evaluate(scenario, "performance.timeOrigin"))
+            val beforeMulti = evaluate(scenario, "fixtureEngine.moves")
+            send(MotionEvent.ACTION_DOWN, 1)
+            send(MotionEvent.ACTION_POINTER_DOWN or (1 shl 8), 2)
+            send(MotionEvent.ACTION_MOVE, 2, 60f)
+            send(MotionEvent.ACTION_POINTER_UP or (1 shl 8), 2, 60f)
+            send(MotionEvent.ACTION_UP, 1, 60f)
+            assertEquals("A real second finger must not be filtered", beforeMulti, evaluate(scenario, "fixtureEngine.moves"))
+            evaluate(scenario, "__beastTouchRecovery20261019.undo()")
+            val beforeUndo = evaluate(scenario, "fixtureEngine.moves")
+            drag()
+            assertEquals("Undo restores the original behavior", beforeUndo, evaluate(scenario, "fixtureEngine.moves"))
         }
     }
 }

@@ -17,6 +17,11 @@
         android:enableOnBackInvokedCallback="true"
         android:hardwareAccelerated="true"
         tools:targetApi="33">
+        <provider
+            android:name=".DiagnosticExportProvider"
+            android:authorities="${applicationId}.input-diagnostics"
+            android:exported="true"
+            android:permission="android.permission.DUMP" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

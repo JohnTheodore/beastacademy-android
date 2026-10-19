@@ -1,0 +1,66 @@
+Recurring frozen input — UNRESOLVED
+==================================
+Updated 2026-10-19. User reports at least three incidents and two or three
+attempted fixes that have not eliminated recurrence. Do not relabel this solved
+because one fixture passes or dragging resumes after a workaround.
+
+Known evidence and fix attempts
+------------------------------
+- October 15 investigation: incomplete synthetic cancellation can omit nonzero
+  active IDs. A baseline reproduces a stuck contact and blocked single-finger
+  dragging. Complete cancellation fixes that demonstrated mechanism. Version
+  0.7.6 shipped that repair. It did not prevent the October 19 recurrence.
+  Details: 2026-10-15-input/README.md and ../../fix-frozen-inputs.md.
+- October 19 natural capture: complete native pointer releases reached the
+  WebView; trusted DOM touchend retained phantom IDs 1 and 2. No native cancel,
+  host removal, or lifecycle interruption occurred in the failing gesture.
+  Details: 2026-10-19-input/findings.txt and natural-transition.txt.
+- Chromium 155 routing source contains a matching retained-move ordering defect.
+  An extracted branch/stub harness demonstrates phantom IDs; full-browser native
+  replays have not reproduced the natural failure. Exact provider trigger is
+  still unproved. Draft report exists; nothing has been submitted upstream.
+- A targeted, session-local engine adapter excluded the already-known phantom
+  IDs without modifying raw browser events. User confirmed "Dragging works now".
+  This is recovery for that document, not a persistent provider fix.
+- Version 0.7.7 (14) refactor: stable native host, complete stream boundaries, explicit
+  visibility state, generation guards, idempotent asynchronous pauses, and
+  wait/reload for a hung renderer. Not installed on the physical tablet.
+- Early canvas ownership policy is experimental and debug-only. Not enabled in
+  the production lesson. Browser/emulator passes do not establish a Vanadium fix.
+- Persistent diagnostics, automatic incident snapshots, shell-protected release
+  export and no-reload inspection controls are implemented locally. Signed,
+  non-debuggable emulator tests verify export/inspection without document
+  replacement; a separate ordinary app UID is denied both operations. The
+  capture tool also preserves the installed APK and checksums. Version 0.7.7 (14) contains these changes; they
+  are not active on the physical tablet until an authorized APK update.
+
+Current preserved incident
+--------------------------
+Physical tablet package: com.example.beast_academy_apk, 0.7.6 (13).
+Original captured PID: 20242; DOM timeOrigin: 1792413558562.2;
+CDP page ID: C24873FD1AF82712BE23B8A111A1475A.
+Provider: Vanadium 155.0.8059.84.0.
+These identify the old capture, not values to assume on the next connection.
+Wireless pairing/connect ports change; ask for current details when necessary.
+
+Durable private evidence:
+/home/jt/.local/state/beastacademy/incidents/2026-10-19-initial/
+Includes SHA256SUMS, original system/log/DOM evidence, follow-up replays,
+provider source and harnesses, traces, live-recovery checks, and refactor checks.
+Do not publish that private archive as part of a commit or bug report.
+
+Criteria for claiming a permanent correction
+-------------------------------------------
+Identify the actual failed boundary, reproduce it reliably on the affected
+provider or instrument the provider to prove the internal path, demonstrate
+that the correction prevents that failure while preserving genuine multitouch,
+scrolling and lesson controls, then validate the authorized deployed build in
+real use. Record remaining uncertainty. Never imply an emulator or desktop
+provider is the same as the Pixel Tablet's Vanadium version.
+
+Capture before recovery
+-----------------------
+See ../adb-input-runbook.txt. Preserve process/document, release transition,
+pressure/timing/history, native and DOM contacts, provider version, lifecycle
+and intercept/cancel behavior. An idle frozen-state screenshot alone is not
+sufficient. Do not reset the failure to enable diagnostics on an old APK.

@@ -1,0 +1,48 @@
+Draft for a Chromium/Vanadium input report — not submitted
+========================================================
+
+Environment: Pixel Tablet; Vanadium WebView 155.0.8059.84.0;
+browser revision @5869fe313571d75152b77813cf0a4ee26a4e6df0;
+Beast Academy wrapper 0.7.6 (13).
+
+Observed: a five-contact physical gesture releases all contacts. Activity,
+host, WebView.dispatchTouchEvent and WebView.onTouchEvent receive each release,
+including final ACTION_UP for pointer 3. Trusted DOM touchend nevertheless has
+touches=[1,2]. Later one-finger gestures include those phantom contacts. Their
+DOM targets lack tagName (Document), and the lesson's single-touch guard blocks
+dragging. JavaScript, rendering, and navigation remain responsive.
+
+The release order is 0,4,1,2,3. See natural-transition.txt and
+transition-summary.txt for the captured actual event sequence. This incident
+contains no native cancellation or host removal during the failing gesture.
+
+Candidate source mechanism:
+InputRouterImpl::FilterAndSendWebInputEvent stores nonblocking TouchMove for
+SendEmptyGestureScrollUpdate. Nonblocking touch boundaries do not flush that
+stored move first. For a retained MOVE[1,2,3], END1 and END2 can be forwarded
+before MOVE[1,2,3] is flushed by a later move. Blink TouchEventManager accepts
+unknown moved IDs with no new hit-tested press, potentially resurrecting them.
+
+An extracted branch with stub client/contact tracking reproduces this ordering
+and leaves [1,2]. Flushing the retained move before non-move touch boundaries
+corrects that harness. This is not a compiled Chromium integration test or a
+claim to have proven the natural incident's exact internal scheduling path.
+Native Android and desktop CDP replays have not reproduced it in a full browser.
+CDP TouchEmulator disables scroll-update compensation, limiting its equivalence
+to the physical Android path. Native traces show the empty scroll-update path.
+
+A useful provider-side regression test would enqueue a nonblocking touch move,
+then touch ends, then a move for the remaining finger, and verify renderer-side
+forwarding order and final contact state. The correction must also handle
+blocking touch boundaries, cancellation, new streams, pending GSU bundling,
+latency bookkeeping, and stream validation. Full-source compilation and native
+Android stress validation remain necessary before proposing a provider patch.
+
+Primary source:
+https://github.com/chromium/chromium/blob/155.0.8059.84/components/input/input_router_impl.cc
+https://github.com/chromium/chromium/blob/155.0.8059.84/third_party/blink/renderer/core/input/touch_event_manager.cc
+https://github.com/chromium/chromium/blob/155.0.8059.84/content/browser/renderer_host/input/touch_emulator_impl.cc
+
+Recovery on the original page was achieved with an explicitly scoped adapter
+for the two already-known phantom IDs, preserving the original raw DOM failure.
+It does not repair the provider or supply a general production workaround.

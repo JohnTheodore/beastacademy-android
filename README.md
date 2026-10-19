@@ -1,6 +1,6 @@
 # Beast Academy Android Wrapper
 
-![Version](https://img.shields.io/badge/version-0.7.6-blue.svg)
+![Version](https://img.shields.io/badge/version-0.7.7-blue.svg)
 
 A streamlined Android application that provides a native container for the Beast Academy online learning platform. This project is unofficial, and it's not affiliated with beastacademy.com at all. I built this for my kids.
 
@@ -15,12 +15,28 @@ A streamlined Android application that provides a native container for the Beast
 
 This project is a WebView-based Android application designed to provide a seamless experience for Beast Academy users on Android devices.
 
+### 0.7.7 Input and Session Reliability
+
+The source now uses an Activity-owned native WebView host, explicit visibility
+state, complete gesture cancellation, and generation guards for late callbacks.
+An unresponsive renderer offers wait/reload; actual renderer exits still recover
+automatically. The tablet's installed 0.7.6 app has not been replaced.
+
+See [input architecture and design precedents](docs/input-architecture.txt) and
+[the October 19 investigation](docs/incidents/2026-10-19-input/findings.txt).
+The experimental early canvas gesture policy remains debug-only pending
+validation against the natural Vanadium failure. Persistent private diagnostics,
+automatic incident snapshots, and shell-protected release export/inspection
+prepare future wireless ADB investigations without requiring a reload. See the
+[capture-first runbook](docs/adb-input-runbook.txt) and
+[recurring-incident status](docs/incidents/input-reliability-status.txt).
+
 ### 0.7.6 Release Highlights:
-*   **Frozen Drag Prevention:** Ends interrupted touch gestures with every active contact, preventing phantom fingers from blocking puzzle dragging.
+*   **Interrupted Gesture Repair:** Ends interrupted touch gestures with every active contact. This fixes the reproduced cancellation failure; the separate October 19 provider failure remains under investigation.
 *   **Reproduction Tests:** Native input tests reproduce the frozen state with the repair disabled and verify that repaired gestures remain usable through 50 interruptions without reloading.
 
 ### Previous Reliability Improvements:
-*   **Automatic Hung-Renderer Recovery:** Detects and recovers from non-responsive renderers.
+*   **Hung-Renderer Detection:** Versions before 0.7.7 automatically recovered; 0.7.7 preserves an unresponsive renderer and offers wait/reload.
 *   **Robust Renderer-Crash Recovery:** Automatically replaces failed WebViews while preserving session state.
 *   **Immediate Screen-off Audio Muting:** Uses the native WebView mute API before pausing page processing, while preserving the lesson on supported WebView providers.
 *   **Improved Full-screen Cleanup:** Centralized handling of custom media views to prevent touch blocking.
@@ -31,22 +47,26 @@ This project is a WebView-based Android application designed to provide a seamle
 *   **Native Speech Synthesis Bridge:** Implements a custom `AndroidSpeechSynthesis` bridge that polyfills the web `speechSynthesis` API using native Android TTS, ensuring that lesson narrations work reliably.
 *   **Audio Context Management:** Includes specialized logic to handle and resume `Howler.js` and Web Audio contexts, bypassing standard browser restrictions on autoplay audio.
 *   **Desktop Experience:** Uses a custom Desktop User Agent to ensure the full Beast Academy web interface is rendered correctly on tablet devices.
-*   **Modern Android UI:** Built with **Jetpack Compose** and **Material 3**, featuring full **Edge-to-Edge** support for an immersive learning environment.
+*   **Native Browser Host:** A stable native view hierarchy with sibling controls and **Edge-to-Edge** support. Compose remains in the debug input lab to reproduce the previous hosting behavior.
 *   **Performance Optimized:** Utilizes hardware acceleration and advanced WebView features like `DOCUMENT_START_SCRIPT` for early polyfill injection.
-*   **Full-screen (Edge-to-Edge) implementation.
+*   **Full-screen (Edge-to-Edge) implementation.**
 
 ## Project Structure
 
-*   `MainActivity.kt`: The main entry point using Compose to host the `WebView`.
+*   `MainActivity.kt`: Activity-owned browser session, screen/lifecycle events, cover monitor, and file picker.
+*   `BrowserChrome.kt`: Native browser host and sibling progress/recovery/cover controls.
+*   `BeastAcademyWebView.kt`: Native touch-stream ownership and diagnostic observation.
+*   `SessionVisibility.kt` / `PauseCompletion.kt`: Testable lifecycle and asynchronous pause coordination.
+*   `WebViewScripts.kt`: Browser-side speech and audio adapters.
 *   `BeastAcademyWebViewController.kt`: Authoritative controller for WebView lifecycle and reliability.
 *   `AndroidSpeechSynthesis.kt`: Native implementation of the Text-to-Speech bridge.
 *   `res/`: Optimized resources including an adaptive launcher icon specifically tuned for the Pixel Tablet experience.
 
 ## Build Requirements
 
-*   Android Studio Ladybug or newer.
-*   Android SDK 34+.
-*   Gradle 8.0+.
+*   Android SDK 37.
+*   Android Gradle Plugin 9.3.1 and a compatible JDK (the current Android Studio bundled JDK works).
+*   The included Gradle 9.6.1 wrapper.
 
 ## How to Build
 

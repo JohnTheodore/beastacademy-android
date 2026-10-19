@@ -1,0 +1,190 @@
+Touch input and browser-session architecture
+===========================================
+2026-10-19 — local refactor; not installed on the child's tablet
+
+Decision
+--------
+For this app, use one Activity-owned WebView in a stable native FrameLayout.
+Native chrome is a sibling of that browser host. Progress, recovery messages,
+TTS warnings, and the cover must never remove/reparent the browser. Keep native
+gesture ownership, browser lifecycle, and puzzle interaction separate.
+
+This project wraps Beast Academy's remotely served application. We can rewrite
+our Android shell and adapters; we do not own the vendor's puzzle engine. A new
+Android shell cannot itself correct an event reordered inside the WebView
+provider. Preserve that distinction when evaluating the refactor.
+
+What the incident established
+-----------------------------
+The original Activity and WebView received the complete physical release
+sequence. The DOM nevertheless retained phantom touch IDs 1 and 2. The puzzle
+engine rejects input when touches.length > 1, so later single-finger dragging
+was ignored. The targeted live engine adapter restored dragging without
+navigation, reload, process replacement, or changing raw browser evidence. The
+user confirmed that dragging worked.
+
+Chromium 155's retained nonblocking TouchMove path permits an older move to be
+forwarded after contact releases. Blink can insert the moved IDs again with a
+Document target. An extracted routing-branch harness reproduces that ordering
+and phantom IDs; flushing the stored move before a touch boundary corrects the
+harness. This is a matching provider-source defect, not a full-provider proof
+of the exact natural trigger. Replays in full browsers have not reproduced the
+natural failure. See incidents/2026-10-19-input/findings.txt.
+
+Production changes made locally
+-------------------------------
+MainActivity owns creation, lifecycle, screen receiver, file-picker registration,
+cover monitoring, and final shutdown. BrowserChrome owns only native widgets.
+SessionVisibility holds the independent resumed/screen/cover/destroyed reasons
+for suspension. A lifecycle resume cannot reopen a closed cover; a screen-on
+broadcast cannot resume a background Activity.
+
+BeastAcademyWebView owns the native stream boundary. A DOWN claims the stream
+from native ancestors. Interruption sends CANCEL with every currently active
+pointer, including nonzero IDs. A new DOWN first ends any previous unfinished
+stream. Physical move/up tails after cancellation are consumed until a fresh
+DOWN; forwarding those tails could introduce moved contacts without a press.
+UP/CANCEL release ancestor interception and recycle the retained MotionEvent.
+Ordinary finger IDs, multitouch, coordinates, and timestamps are preserved.
+
+BeastAcademyWebViewController owns the browser generation. Page, progress,
+full-screen, popup, file-picker, and responsiveness callbacks must belong to
+its current generation. A late renderer-exit callback from a replaced view is
+ignored instead of tearing down the new view's speech/picker/full-screen state.
+File selection is completed once, and a result from an outstanding old chooser
+cannot be delivered into a newer chooser. PauseCompletion arbitrates cleanup
+callback versus timeout, resume, replacement, and shutdown so delayed callbacks
+cannot pause the replacement or complete the same pause twice.
+
+WebViewScripts contains document adapters, separate from native ownership.
+Audio cleanup and native provider muting remain. The session pauses its own
+WebViews without pauseTimers()/resumeTimers(), whose effects are process-wide.
+Actual renderer exits still trigger rate-limited recovery; a merely unresponsive
+renderer offers wait/reload and is preserved until user choice. This intentionally
+replaces the previous two-second automatic renderer termination behavior.
+
+Persistent private diagnostics in all builds retain every native move at one browser boundary and every
+DOM touch move, instead of trying to reconstruct missing moves by interpolation.
+Delayed DOM terminal messages are checked against the latest settled DOM state
+and an unchanged native input version. This avoids mistaking an earlier valid
+multitouch release for stranded contacts after the final native UP. Snapshots
+rotate across incidents instead of letting one old snapshot suppress new ones.
+These reports diagnose; they never reset the browser or alter its touch lists.
+The private writer and disk history are bounded; exports identify dropped
+records and disk history retains gap markers. Files are excluded from backups.
+A DUMP-protected provider permits shell ZIP export in release builds without
+run-as. A separate, explicitly DUMP-checked control can enable/disable existing
+WebView inspection without reload; release debugging remains off by default.
+See adb-input-runbook.txt and incidents/input-reliability-status.txt.
+
+Early ownership experiment
+--------------------------
+app/src/debug/assets/puzzle-touch-policy.js is an isolated prevention candidate.
+It applies touch-action:none and a nonpassive touchstart preventDefault only to
+explicitly marked puzzle surfaces. It preserves the trusted event and genuine
+touch lists. Dynamic surfaces are handled and detached surfaces are cleaned up;
+undo restores the original inline style and listeners. It is NOT installed by
+the production controller, and it is NOT the live recovery adapter.
+
+Claiming an intended puzzle gesture at its beginning may avoid the provider's
+scroll/nonblocking routing path. This remains a hypothesis requiring native
+Vanadium validation. A blanket document listener, TouchEvent prototype rewrite,
+or universal single-touch filter would interfere with legitimate scrolling,
+click synthesis, or real multifinger input. In particular, suppressing the
+browser's synthetic mouse click can break vendor controls that rely on it.
+Surface selection and real lesson controls must be verified before adoption.
+
+The debug input lab accepts claimCanvas=true for native replay comparisons.
+The host-browser test is scripts/test-puzzle-touch-policy.mjs. Its default
+Playwright dependency can be overridden with PLAYWRIGHT_MODULE and CHROMIUM_PATH.
+Desktop CDP input disables native scroll-update compensation, so its success
+checks the interaction contract rather than reproducing the Android bug.
+
+If we owned the puzzle engine from scratch
+-----------------------------------------
+Use a small explicit interaction state machine with Pointer Events. Idle accepts
+a pointerdown on an interactive piece, stores that pointerId, and captures it
+with setPointerCapture. Dragging accepts moves/up for that ID only. Additional
+fingers have a declared policy: ignored for a single-piece tool, or explicitly
+transitioned into a separate pinch/pan tool. Do not make a primary drag depend
+on the global touches.length remaining exactly one.
+
+Set touch-action on the intended interaction surface before the gesture starts:
+none for a board that owns pan/zoom; pan-y for a surface deliberately sharing
+vertical page scrolling. Keep normal browser behavior on surrounding content.
+Pointer capture, touch-action, and native interception solve different ownership
+boundaries; none guarantees immunity to a provider defect.
+
+End a drag on matching pointerup; cancel it on pointercancel, lostpointercapture,
+window blur, page hiding, surface disposal, or tool change. Cancellation and
+completion must be idempotent. Ignore unknown move/up IDs: they must never create
+a new drag. Treat a new press as a fresh interaction, not a continuation of a
+half-cleared boolean flag.
+
+Keep transient drag position separate from committed puzzle state. Render the
+latest position once per animation frame; validate and commit a move only at
+completion. Cancellation discards the transient state without losing the lesson.
+Use a consistent client-to-board coordinate transform for zoomed/scaled canvases.
+Offer keyboard/tap alternatives for interactions that otherwise require dragging.
+Test invariants, genuine multitouch, cancellation, focus changes, replaced views,
+background audio, outside scrolling, and long randomized gesture sequences.
+Do not equate successful injected mouse events with real Android touch coverage.
+
+Source precedents reviewed
+--------------------------
+These are design precedents, not proof that another app is immune to our bug.
+No source was copied from the GPL applications into our production code.
+
+1. Lichess Chessground (GPL-3.0), a mature interactive chessboard targeting web
+   and mobile WebViews. Its events.ts installs a local nonpassive board
+   touchstart listener; drag.ts claims intended board interactions with
+   preventDefault and has explicit drag state and cancellation. It still uses
+   Touch Events and ignores multiple touches, so adopting it wholesale would
+   not eliminate the phantom-contact problem.
+   Reviewed commit 69f3451c9d70d682d5421539f28d68a15cfda4cd:
+   https://github.com/lichess-org/chessground/blob/69f3451c9d70d682d5421539f28d68a15cfda4cd/src/events.ts
+   https://github.com/lichess-org/chessground/blob/69f3451c9d70d682d5421539f28d68a15cfda4cd/src/drag.ts
+
+2. Lichess's legacy mobile app provides a close historical puzzle/WebView
+   comparison. Its board explicitly handles touchcancel by cancelling the drag.
+   The repository is archived; this describes the legacy hybrid app, not the
+   current Flutter mobile application.
+   Reviewed commit 8d97c91477082143d7e791199a25424ae4f3df56:
+   https://github.com/lichess-org/lichobile/blob/8d97c91477082143d7e791199a25424ae4f3df56/src/chessground/Chessground.ts
+   https://github.com/lichess-org/lichobile/blob/8d97c91477082143d7e791199a25424ae4f3df56/src/chessground/drag.ts
+   https://lichess.org/source
+
+3. Capacitor (MIT) is a native WebView-hosting precedent. BridgeActivity sets
+   up its native content and forwards Activity lifecycle to its bridge owner.
+   We use the ownership principle; adding Capacitor itself would not patch
+   Chromium or simplify this small wrapper enough to justify a migration.
+   Reviewed commit 841017a3c7ddb84c614be389e74a24ea0a629ff5:
+   https://github.com/ionic-team/capacitor/blob/841017a3c7ddb84c614be389e74a24ea0a629ff5/android/capacitor/src/main/java/com/getcapacitor/BridgeActivity.java
+
+4. AnkiDroid (GPL-3.0) is a mature educational WebView/native-UI comparison.
+   Its reviewer layout keeps the web content inside a native container, with
+   native controls alongside it. It is a hosting reference, not a drag engine.
+   Reviewed commit 099055ffafc6e66a1193b55fb847a9b2045d76ad:
+   https://github.com/ankidroid/Anki-Android/blob/099055ffafc6e66a1193b55fb847a9b2045d76ad/AnkiDroid/src/main/res/layout/fragment_reviewer.xml
+
+Platform contracts:
+https://developer.android.com/develop/ui/views/touch-and-input/gestures/viewgroup
+https://developer.android.com/reference/android/webkit/WebView#pauseTimers()
+https://www.w3.org/TR/pointerevents3/#the-touch-action-css-property
+https://www.w3.org/TR/pointerevents3/#setting-pointer-capture
+
+Remaining validation and scope
+------------------------------
+The existing sound/TTS, cover detector, file selection, full-screen, navigation,
+cookies, and actual-crash recovery remain. This rewrite concentrates on input
+and session ownership; it is not a rewrite of Beast Academy's remote engine or
+a completed browser security audit. Existing bridge-origin, navigation, and
+permission policies warrant a separate compatibility-tested review.
+
+The Pixel Tablet's installed app and live session remain untouched. Before an
+update can be called validated, run the isolated lab and lesson smoke checks
+on its current Vanadium version with the user's authorization, then compare
+the candidate against normal controls, login, audio, file picker, full-screen,
+and background/cover behavior. Do not run lock/screen-off experiments or replace
+the child's APK merely to get a passing test. A build or emulator pass alone is
+not evidence that the provider's natural failure has been fixed.

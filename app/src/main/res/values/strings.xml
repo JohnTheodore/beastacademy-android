@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Beast Academy</string>
+    <string name="reload_now">Reload now</string>
+    <string name="renderer_waiting">Beast Academy is not responding. You can wait or reload.</string>
+    <string name="recovering">Recovering…</string>
+    <string name="tts_unavailable">No TTS engine found. Go to Settings → Accessibility → Text-to-speech to install one.</string>
 </resources>

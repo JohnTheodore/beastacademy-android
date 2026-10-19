@@ -30,68 +30,10 @@ import java.util.Collections
 import java.util.concurrent.atomic.AtomicLong
 
 private const val TAG = "BeastAcademyApp"
-private const val RECOVERY_GRACE_PERIOD_MS = 2000L
-private const val RECOVERY_FALLBACK_MS = 2000L
 private const val POPUP_TIMEOUT_MS = 10000L
 private const val AUDIO_STATE_CLEANUP_TIMEOUT_MS = 250L
 private const val DEFAULT_START_URL = "https://beastacademy.com/school"
 
-private val PAUSE_WEB_AUDIO_SCRIPT = """
-    (function() {
-      function pauseWindow(target) {
-        try {
-          if (target.speechSynthesis) target.speechSynthesis.cancel();
-        } catch(e) {}
-        try {
-          target.document.querySelectorAll('audio, video').forEach(function(el) {
-            el.pause();
-          });
-        } catch(e) {}
-        try {
-          if (target.Howler) {
-            target.Howler.pause();
-            if (target.Howler.ctx && target.Howler.ctx.state === 'running') {
-              target.Howler.ctx.suspend();
-            }
-          }
-        } catch(e) {}
-        try {
-          for (var i = 0; i < target.frames.length; i++) {
-            pauseWindow(target.frames[i]);
-          }
-        } catch(e) {}
-      }
-      pauseWindow(window);
-      return true;
-    })();
-""".trimIndent()
-
-private val WEB_AUDIO_LIFECYCLE_SCRIPT = """
-    (function() {
-      if (window.__baAudioLifecycleInstalled) return;
-      window.__baAudioLifecycleInstalled = true;
-
-      function pauseForBackground() {
-        if (!document.hidden) return;
-        try {
-          document.querySelectorAll('audio, video').forEach(function(el) {
-            el.pause();
-          });
-        } catch(e) {}
-        try {
-          if (window.Howler) {
-            window.Howler.pause();
-            if (window.Howler.ctx && window.Howler.ctx.state === 'running') {
-              window.Howler.ctx.suspend();
-            }
-          }
-        } catch(e) {}
-      }
-
-      document.addEventListener('visibilitychange', pauseForBackground, true);
-      window.addEventListener('pagehide', pauseForBackground, true);
-    })();
-""".trimIndent()
 
 enum class RecoveryReason {
     RENDERER_CRASHED,
@@ -127,14 +69,15 @@ class BeastAcademyWebViewController(
     private var lastSafeUrl: String = DEFAULT_START_URL
     private val recoveryLimiter = RecoveryLimiter()
     
-    private var pendingRecovery: Runnable? = null
     private var pendingWebViewPause: Runnable? = null
     private var isDisposed = false
     private var isPaused = false
     private var recreateOnResume = false
-    private var audioLifecycleGeneration = 0L
+    private val pauseCompletion = PauseCompletion()
+    private var pickerInFlight = false
+    private var rendererUnresponsive = false
     
-    var filePathCallback: ValueCallback<Array<Uri>>? = null
+    private var filePathCallback: ValueCallback<Array<Uri>>? = null
     var filePickerLauncher: ActivityResultLauncher<Array<String>>? = null
 
     fun diagnosticState(): String =
@@ -142,119 +85,25 @@ class BeastAcademyWebViewController(
             "recreateOnResume=$recreateOnResume webView=${currentWebView != null} " +
             "customView=${customView != null} generation=${generation.get()}"
 
-    private val speechPolyfill = """
-        (function() {
-          var _pending = {};
-          var _seq = 0;
-
-          function waitForBridge(callback, retries) {
-            if (window.AndroidSpeech && window.AndroidSpeech.isReady()) {
-              callback(true);
-            } else if (retries <= 0) {
-              callback(false);
-            } else {
-              setTimeout(function() { waitForBridge(callback, retries - 1); }, 300);
-            }
-          }
-
-          window.__androidTtsStart = function(id) {
-            var u = _pending[id];
-            if (u && u.onstart) { try { u.onstart({}); } catch(e) {} }
-          };
-          window.__androidTtsDone = function(id) {
-            var u = _pending[id];
-            delete _pending[id];
-            window.speechSynthesis.speaking = Object.keys(_pending).length > 0;
-            if (u && u.onend) { try { u.onend({}); } catch(e) {} }
-          };
-          window.__androidTtsError = function(id) {
-            var u = _pending[id];
-            delete _pending[id];
-            window.speechSynthesis.speaking = Object.keys(_pending).length > 0;
-            if (u && u.onerror) { try { u.onerror({ error: 'synthesis-failed' }); } catch(e) {} }
-          };
-
-          window.SpeechSynthesisUtterance = function(text) {
-            this.text = text || '';
-            this.lang = 'en-US';
-            this.rate = 1; this.pitch = 1; this.volume = 1;
-            this.onend = null; this.onstart = null; this.onerror = null;
-          };
-
-          var _listeners = {};
-
-          window.speechSynthesis = {
-            speaking: false,
-            pending: false,
-            paused: false,
-
-            addEventListener: function(type, fn) {
-              if (!_listeners[type]) _listeners[type] = [];
-              _listeners[type].push(fn);
-            },
-            removeEventListener: function(type, fn) {
-              if (!_listeners[type]) return;
-              _listeners[type] = _listeners[type].filter(function(f) { return f !== fn; });
-            },
-            dispatchEvent: function(event) {
-              var fns = _listeners[event.type] || [];
-              fns.forEach(function(fn) { try { fn(event); } catch(e) {} });
-              return true;
-            },
-
-            getVoices: function() {
-              return [{ name: 'Android TTS', lang: 'en-US', default: true, localService: true, voiceURI: 'Android TTS' }];
-            },
-            speak: function(utterance) {
-              var self = this;
-              var id = 'utt_' + (++_seq);
-              _pending[id] = utterance;
-              waitForBridge(function(ok) {
-                if (!ok) {
-                  delete _pending[id];
-                  self.speaking = Object.keys(_pending).length > 0;
-                  if (utterance.onerror) { try { utterance.onerror({ error: 'synthesis-unavailable' }); } catch(e) {} }
-                  return;
-                }
-                var queued = window.AndroidSpeech.speak(id, utterance.text || '');
-                if (queued) {
-                  self.speaking = true;
-                } else {
-                  delete _pending[id];
-                  self.speaking = Object.keys(_pending).length > 0;
-                  if (utterance.onerror) { try { utterance.onerror({ error: 'synthesis-unavailable' }); } catch(e) {} }
-                }
-              }, 20);
-            },
-            cancel: function() {
-              _pending = {};
-              this.speaking = false;
-              if (window.AndroidSpeech) window.AndroidSpeech.cancel();
-            },
-            pause: function() {},
-            resume: function() {}
-          };
-
-          setTimeout(function() {
-            var event = new Event('voiceschanged');
-            window.speechSynthesis.dispatchEvent(event);
-          }, 500);
-        })();
-    """.trimIndent()
 
     fun attachHost(newHost: FrameLayout) {
+        check(!isDisposed) { "Cannot attach a closed browser session" }
+        check(host == null || host === newHost) { "A browser session has one stable host" }
+        if (host === newHost) return
         host = newHost
         if (currentWebView == null) {
             requestRecovery(RecoveryReason.FALLBACK)
         } else {
             val wv = currentWebView!!
-            (wv.parent as? ViewGroup)?.removeView(wv)
+            check(wv.parent == null) { "Detach the previous host explicitly" }
             newHost.addView(wv)
         }
     }
 
     fun detachHost(oldHost: FrameLayout) {
         if (host === oldHost) {
+            (currentWebView as? BeastAcademyWebView)?.cancelActiveTouches("host detached")
+            currentWebView?.let(oldHost::removeView)
             host = null
         }
     }
@@ -271,6 +120,7 @@ class BeastAcademyWebViewController(
         val wv = BeastAcademyWebView(activity)
         wv.installInputDiagnostics()
         val gen = generation.incrementAndGet()
+        rendererUnresponsive = false
         
         wv.layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -324,17 +174,17 @@ class BeastAcademyWebViewController(
         }
 
         if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
-            WebViewCompat.addDocumentStartJavaScript(wv, speechPolyfill, setOf("*"))
-            WebViewCompat.addDocumentStartJavaScript(wv, WEB_AUDIO_LIFECYCLE_SCRIPT, setOf("*"))
+            WebViewCompat.addDocumentStartJavaScript(wv, WebViewScripts.speechPolyfill, setOf("*"))
+            WebViewCompat.addDocumentStartJavaScript(wv, WebViewScripts.audioLifecycle, setOf("*"))
         }
 
         wv.webChromeClient = object : WebChromeClient() {
             override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
-                showCustomView(view, callback)
+                if (owns(wv, gen)) showCustomView(view, callback) else callback?.onCustomViewHidden()
             }
 
             override fun onHideCustomView() {
-                hideCustomView()
+                if (owns(wv, gen)) hideCustomView()
             }
 
             override fun onPermissionRequest(request: PermissionRequest?) {
@@ -342,14 +192,15 @@ class BeastAcademyWebViewController(
             }
 
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                if (view === currentWebView) {
+                if (owns(view, gen)) {
                     onProgressChanged(newProgress)
                 }
             }
 
             override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
+                if (!owns(view, gen) || isPaused) return false
                 val transport = resultMsg?.obj as? WebView.WebViewTransport ?: return false
-                val popup = createPopupWebView(activity)
+                val popup = createPopupWebView(activity, gen)
                 transport.webView = popup
                 resultMsg.sendToTarget()
                 return true
@@ -360,7 +211,9 @@ class BeastAcademyWebViewController(
                 filePathCallback: ValueCallback<Array<Uri>>?,
                 fileChooserParams: FileChooserParams?
             ): Boolean {
-                this@BeastAcademyWebViewController.filePathCallback?.onReceiveValue(null)
+                val launcher = filePickerLauncher
+                if (!owns(webView, gen) || launcher == null || isPaused || pickerInFlight) return false
+                completeFilePicker(null)
                 this@BeastAcademyWebViewController.filePathCallback = filePathCallback
                 val acceptTypes = fileChooserParams?.acceptTypes
                     ?.filter { it.isNotEmpty() }
@@ -368,12 +221,14 @@ class BeastAcademyWebViewController(
                     ?.takeIf { it.isNotEmpty() }
                     ?: arrayOf("*/*")
                 return runCatching {
-                    filePickerLauncher?.launch(acceptTypes) ?: false
+                    pickerInFlight = true
+                    launcher.launch(acceptTypes)
                     true
                 }.getOrElse {
+                    pickerInFlight = false
                     this@BeastAcademyWebViewController.filePathCallback = null
                     filePathCallback?.onReceiveValue(null)
-                    false
+                    true // Cancellation was delivered; the request has been handled.
                 }
             }
             
@@ -388,16 +243,18 @@ class BeastAcademyWebViewController(
 
         wv.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
-                if (url != null && isSafeUrl(url)) {
+                if (owns(view, gen) && url != null && isSafeUrl(url)) {
                     lastSafeUrl = url
+                    DiagnosticTrace.record("navigation generation=$gen url=${sanitizeUrl(url)}")
                 }
             }
             
             override fun onPageCommitVisible(view: WebView?, url: String?) {
-                onRecoveryStateChanged(RecoveryState.Healthy)
+                if (owns(view, gen)) onRecoveryStateChanged(RecoveryState.Healthy)
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
+                if (!owns(view, gen)) return
                 view?.evaluateJavascript("""
                     (function() {
                       function resume() {
@@ -417,6 +274,7 @@ class BeastAcademyWebViewController(
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?) = false
 
             override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
+                if (!owns(view, gen)) return true
                 val didCrash = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     detail?.didCrash() == true
                 } else {
@@ -433,7 +291,7 @@ class BeastAcademyWebViewController(
             val executor = ContextCompat.getMainExecutor(activity)
             wv.setWebViewRenderProcessClient(executor, object : WebViewRenderProcessClient() {
                 override fun onRenderProcessUnresponsive(view: WebView, renderer: WebViewRenderProcess?) {
-                    onRendererUnresponsive(view, renderer, gen)
+                    onRendererUnresponsive(view, gen)
                 }
 
                 override fun onRenderProcessResponsive(view: WebView, renderer: WebViewRenderProcess?) {
@@ -450,7 +308,7 @@ class BeastAcademyWebViewController(
         return uri.scheme == "https" && (uri.host == "beastacademy.com" || uri.host?.endsWith(".beastacademy.com") == true)
     }
 
-    private fun createPopupWebView(context: Context): WebView {
+    private fun createPopupWebView(context: Context, ownerGeneration: Long): WebView {
         val popup = WebView(context)
         popupWebViews.add(popup)
         var handled = false
@@ -458,7 +316,9 @@ class BeastAcademyWebViewController(
         fun handleInMainWebView(uri: Uri): Boolean {
             if (handled) return true
             handled = true
-            currentWebView?.loadUrl(uri.toString())
+            if (!isDisposed && ownerGeneration == generation.get() && !isPaused) {
+                currentWebView?.loadUrl(uri.toString())
+            }
             destroyPopupWebView(popup)
             return true
         }
@@ -490,8 +350,7 @@ class BeastAcademyWebViewController(
     }
 
     private fun destroyPopupWebView(wv: WebView?) {
-        if (wv == null) return
-        popupWebViews.remove(wv)
+        if (wv == null || !popupWebViews.remove(wv)) return
         runCatching {
             (wv.parent as? ViewGroup)?.removeView(wv)
             wv.stopLoading()
@@ -504,7 +363,8 @@ class BeastAcademyWebViewController(
         DiagnosticTrace.record("recovery requested reason=$reason ${diagnosticState()}")
         if (isDisposed) return
         if (failedView != null && failedView !== currentWebView) {
-            destroyMainWebView(failedView)
+            // Its teardown already ran when the generation was replaced. A late callback
+            // must not touch the new session's picker, full-screen view, or speech binding.
             return
         }
 
@@ -516,17 +376,18 @@ class BeastAcademyWebViewController(
             return
         }
         
-        if (pendingRecovery != null && reason != RecoveryReason.RENDERER_CRASHED && reason != RecoveryReason.RENDERER_KILLED) return
-        
         if (reason != RecoveryReason.MANUAL_RELOAD && !recoveryLimiter.recordAndCheck()) {
             onRecoveryStateChanged(RecoveryState.Failed("Beast Academy keeps stopping."))
             destroyMainWebView(currentWebView)
             return
         }
 
+        cancelPendingWebViewPause()
+        pauseCompletion.invalidate()
         onRecoveryStateChanged(RecoveryState.Recovering)
         
         val oldView = currentWebView
+        popupWebViews.toList().forEach(::destroyPopupWebView)
         destroyMainWebView(oldView)
         
         val newView = createMainWebView()
@@ -542,10 +403,9 @@ class BeastAcademyWebViewController(
             currentWebView = null
         }
         
-        cancelRendererWatchdog()
+        (wv as? BeastAcademyWebView)?.cancelActiveTouches("session destroyed")
         hideCustomView()
-        filePathCallback?.onReceiveValue(null)
-        filePathCallback = null
+        completeFilePicker(null)
         speechBridge.detachWebView(wv)
         
         runCatching {
@@ -560,50 +420,35 @@ class BeastAcademyWebViewController(
         }
     }
 
-    private fun onRendererUnresponsive(view: WebView, renderer: WebViewRenderProcess?, gen: Long) {
-        if (view !== currentWebView) return
+    private fun owns(view: WebView?, gen: Long): Boolean =
+        !isDisposed && view != null && view === currentWebView && gen == generation.get()
+
+    fun onFilePickerResult(uris: Array<Uri>?) {
+        pickerInFlight = false
+        completeFilePicker(uris)
+    }
+
+    private fun completeFilePicker(uris: Array<Uri>?) {
+        val callback = filePathCallback
+        filePathCallback = null
+        callback?.onReceiveValue(uris)
+    }
+
+    private fun onRendererUnresponsive(view: WebView, gen: Long) {
+        if (!owns(view, gen)) return
         logRendererIncident("onRendererUnresponsive", view, gen, RecoveryReason.RENDERER_HUNG, null)
-        
-        if (pendingRecovery != null) return
-        
+        // A delayed renderer can recover. Preserve the lesson and evidence until the user
+        // explicitly chooses Reload; only an actual renderer exit warrants auto recovery.
+        if (!rendererUnresponsive) DiagnosticTrace.preserveFailure("renderer unresponsive generation=$gen")
+        rendererUnresponsive = true
         onRecoveryStateChanged(RecoveryState.HungWaiting)
-        
-        val watchdog = object : Runnable {
-            override fun run() {
-                if (pendingRecovery !== this) return
-                pendingRecovery = null
-                
-                Log.w(TAG, "Renderer hung grace period expired, terminating...")
-                val terminated = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    renderer?.terminate() == true
-                } else false
-                
-                if (!terminated) {
-                    requestRecovery(RecoveryReason.RENDERER_HUNG, view)
-                } else {
-                    mainHandler.postDelayed({
-                        if (currentWebView === view) {
-                            Log.w(TAG, "Renderer termination fallback triggered")
-                            requestRecovery(RecoveryReason.FALLBACK, view)
-                        }
-                    }, RECOVERY_FALLBACK_MS)
-                }
-            }
-        }
-        pendingRecovery = watchdog
-        mainHandler.postDelayed(watchdog, RECOVERY_GRACE_PERIOD_MS)
     }
 
     private fun onRendererResponsive(view: WebView, gen: Long) {
-        if (view !== currentWebView) return
+        if (!owns(view, gen)) return
+        rendererUnresponsive = false
         Log.i(TAG, "Renderer became responsive again (generation $gen)")
-        cancelRendererWatchdog()
         onRecoveryStateChanged(RecoveryState.Healthy)
-    }
-
-    private fun cancelRendererWatchdog() {
-        pendingRecovery?.let { mainHandler.removeCallbacks(it) }
-        pendingRecovery = null
     }
 
     private fun logRendererIncident(
@@ -742,13 +587,13 @@ class BeastAcademyWebViewController(
             destroyMainWebView(wv)
             popupWebViews.toList().forEach { destroyPopupWebView(it) }
             isPaused = true
-            audioLifecycleGeneration++
+            pauseCompletion.invalidate()
             return
         }
 
         if (isPaused) return
         isPaused = true
-        val generation = ++audioLifecycleGeneration
+        val generation = pauseCompletion.begin()
         if (wv == null) return
 
         val timeout = Runnable {
@@ -759,7 +604,7 @@ class BeastAcademyWebViewController(
         mainHandler.postDelayed(timeout, AUDIO_STATE_CLEANUP_TIMEOUT_MS)
 
         runCatching {
-            wv.evaluateJavascript(PAUSE_WEB_AUDIO_SCRIPT) {
+            wv.evaluateJavascript(WebViewScripts.pauseAudio) {
                 finishWebViewPause(wv, generation)
             }
         }.onFailure {
@@ -769,12 +614,11 @@ class BeastAcademyWebViewController(
     }
 
     private fun finishWebViewPause(wv: WebView, generation: Long) {
-        if (!isPaused || generation != audioLifecycleGeneration || currentWebView !== wv) return
+        if (!isPaused || currentWebView !== wv || !pauseCompletion.complete(generation)) return
         cancelPendingWebViewPause()
         DiagnosticTrace.record("webview pausing generation=$generation ${diagnosticState()}")
         runCatching { wv.onPause() }
-        runCatching { wv.pauseTimers() }
-        DiagnosticTrace.record("webview paused timers paused generation=$generation")
+        DiagnosticTrace.record("webview paused generation=$generation")
         popupWebViews.toList().forEach { popup -> runCatching { popup.onPause() } }
     }
 
@@ -806,7 +650,7 @@ class BeastAcademyWebViewController(
         DiagnosticTrace.record("controller onResume before ${diagnosticState()}")
         if (isDisposed) return
         isPaused = false
-        audioLifecycleGeneration++
+        pauseCompletion.invalidate()
         cancelPendingWebViewPause()
 
         activity.window.enterImmersiveMode()
@@ -818,9 +662,8 @@ class BeastAcademyWebViewController(
         }
 
         val wv = currentWebView ?: return
-        wv.resumeTimers()
         wv.onResume()
-        DiagnosticTrace.record("webview resumed timers resumed ${diagnosticState()}")
+        DiagnosticTrace.record("webview resumed ${diagnosticState()}")
         popupWebViews.toList().forEach { popup ->
             runCatching { popup.onResume() }
         }
@@ -828,7 +671,9 @@ class BeastAcademyWebViewController(
     }
 
     fun shutdown() {
+        if (isDisposed) return
         isDisposed = true
+        pauseCompletion.invalidate()
         cancelPendingWebViewPause()
         destroyMainWebView(currentWebView)
         val popups = popupWebViews.toList()

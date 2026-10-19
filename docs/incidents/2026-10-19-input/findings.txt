@@ -1,0 +1,223 @@
+Natural frozen-drag recurrence captured 2026-10-19
+
+User constraint: preserve the live failure; no app restart until explicitly authorized.
+No stop, restart, reload, navigation, installation, screen-lock test, native input
+injection, browser input injection, or recovery experiment was performed.
+
+Connected with wireless ADB. App PID remains 20242, version 0.7.6 (13).
+WebView: app.vanadium.webview 155.0.8059.84.0.
+Live document target: C24873FD1AF82712BE23B8A111A1475A.
+Document performance.timeOrigin: 1792413558562.2.
+Read-only Runtime evaluation returned immediately, readyState complete.
+
+The app logcat captured a natural working-to-broken transition. This is stronger
+than the rotating private logs, which now start after the failure. The frozen
+suspected-stale-touch.log is from October 17 and a different WebView instance;
+it must not be treated as the October 19 transition. Its first warning also
+illustrates asynchronous-reporting ambiguity: an intermediate touchend can be
+reported after native bookkeeping has already processed the final UP.
+
+Observed transition (tablet log clock):
+08:53:59.396: new gesture starts with native pointer 0 and DOM touches [0].
+08:53:59.462-.595: pointers 1,2,3,4 join. Browser pointercancel events occur
+for the first two Pointer Events contacts; Touch Events continue normally.
+Pointer Events cancellation alone is not evidence of a lost Touch Event.
+08:53:59.612: pointer 4 lifts; later it is pressed again.
+08:53:59.911: pointer 0 lifts; DOM touchend leaves [1,2,3,4].
+08:53:59.944: pointer 4 lifts; DOM touchend leaves [1,2,3].
+08:53:59.970: pointer 1 lifts; DOM touchend leaves [2,3].
+08:53:59.975: pointer 2 lifts; DOM touchend leaves [3].
+08:53:59.992: final native ACTION_UP names only pointer 3 and reaches both
+WebView dispatchTouchEvent and onTouchEvent. Delivery returns true.
+08:53:59.998: trusted DOM touchend changes pointer 3, but touches is [1,2].
+Those two previously released contacts reappear without another touchstart.
+They are at (994.5,354.5) and (432,734.5) in CSS pixels.
+08:54:07.348 and subsequent one-finger attempts: native count=1 but DOM
+touchstart includes [0,1,2]; touchend leaves [1,2].
+
+No native ACTION_CANCEL, host removal, or lifecycle interruption appears in
+this failing gesture. All native pointer releases reached WebView. Therefore
+this trace does not match the incomplete-cancellation mechanism repaired in
+0.7.6. It establishes a discrepancy after WebView's native input boundary,
+without identifying the internal Chromium/provider function responsible.
+The browser-supplied trusted TouchLists themselves contain the phantom contacts;
+this is more specific than stale puzzle drag bookkeeping. The webpage handler
+and current page context are captured privately for follow-up comparison.
+
+Evidence:
+- natural-transition.txt: verbatim app diagnostic/log lines covering the five-
+  contact gesture through subsequent broken one-finger attempts.
+- transition-summary.txt: compact native terminal/start and DOM event sequence,
+  including a preceding four-contact gesture that correctly ends with touches=[].
+- Full private capture retained outside the repository under
+  /home/jt/.local/state/beastacademy/incidents/2026-10-19-initial/.
+  Includes original logcat, system input/window/provider snapshots, private trace
+  tar, screenshot, target identity, page summary, and canvas listeners.
+
+Next investigation should reproduce this native sequence in the isolated input
+lab, including rapid release of pointers 1 and 2 immediately before final UP
+of pointer 3. Vary timing and browser gesture arbitration independently. Do not
+run destructive/recovery experiments against this live document or install a
+new APK over the running application without user authorization. No fix or
+recovery is claimed by this capture.
+
+
+Follow-up investigation and live recovery, 2026-10-19
+
+The capture-only statements above describe the initial collection. Follow-up
+experiments used only the separate com.example.beast_academy_apk.inputlab package.
+The child's APK was never replaced. PID 20242 and document timeOrigin remained
+1792413558562.2 throughout. The lab temporarily covered the child's activity;
+it returned to the same activity/document after each run.
+
+Recorded native replay: 19 retained WebView onTouch events from the failing
+five-contact stream. A denser input variant uses 26 retained native events
+across trace boundaries and interpolates moves every 8 ms. These interpolated
+moves are experimental inputs, not a claim to recover missing original events.
+The replay can use an ordinary/scrollable fixture or a lesson-like canvas and
+listener configuration. Native injection is limited to the isolated lab.
+
+Results so far:
+- 20 repetitions with touch-action:none cleared contacts.
+- 40 untouched repetitions with a scrollable fixture cleared contacts.
+- 30 denser repetitions with lesson-like listeners cleared contacts.
+- 20 asynchronous denser repetitions with the lesson's viewport settings cleared
+  contacts. A Chromium input trace was captured.
+- An earlier apparent failure was a real physical touch arriving after the test
+  gesture ended; deviceId=4 distinguishes it from injected deviceId=-1. This was
+  discarded as a reproduction.
+- A first recovery-fixture attempt did not wait for Compose removal to commit;
+  it failed before establishing a phantom contact. Adding a wait and checking
+  the actual stranded state fixed the test setup.
+
+The live workaround is app/src/debug/assets/live-touch-recovery.js. It wraps
+only the existing puzzle engine's onMouseEvent method. It filters known phantom
+IDs 1 and 2 from the event view passed into that engine. It does not alter
+TouchEvent.prototype, dispatch synthetic input, or rewrite raw events seen by
+other listeners. New trusted touchstart changes remove reused IDs from the
+exclusion set, so a real contact with that ID is accepted. A session-local undo
+restores the original engine method and removes the observation listener.
+
+The isolated native test liveRecoveryFiltersOnlyKnownPhantomContactsWithoutReload
+passed: establish stale contact 2, verify one-finger drag is blocked, apply the
+same JavaScript, verify drag delivery while raw browser contact 2 persists,
+verify genuine two-finger movement remains blocked, undo and verify the old
+blocked behavior returns, with unchanged performance.timeOrigin.
+
+The workaround was then installed into the original document through read-only
+engine discovery followed by one explicit JavaScript method replacement. Before
+and after snapshots had the same puzzle trial state and document timeOrigin.
+The user confirmed: "Dragging works now". Subsequent inspection showed 90
+adapted engine events; the last raw touchend still contained IDs [1,2], while
+the engine's adapted touches list was empty. This demonstrates live recovery
+without destroying the browser's failure state. It is a targeted current-session
+workaround, not a claim that Chromium's contact map has been repaired. It will
+not automatically persist after document navigation or app replacement.
+
+Source investigation: Chromium 155.0.8059.84 and Vanadium 155.0.8059.84.0 were
+inspected. The browser revision is @5869fe313571d75152b77813cf0a4ee26a4e6df0.
+InputRouterImpl::FilterAndSendWebInputEvent retains a nonblocking TouchMove in
+last_touch_move_event_ for the SendEmptyGestureScrollUpdate feature. That slot
+is flushed by a later touch move or attached to a gesture scroll update. The
+nonblocking TouchEnd path does not first flush that slot. An extracted-code
+harness demonstrates that MOVE[1,2,3], END1, END2, MOVE[3], END3 is forwarded as
+END1, END2, MOVE[1,2,3], END3 and leaves contacts [1,2]. With the feature off,
+that harness preserves order and leaves no contacts. Blink's HandleTouchPoint
+inserts unknown moved IDs without a hit-tested target, consistent with the
+phantom contacts in the real trace having Document targets (no tagName).
+
+This identifies a specific matching source defect. It is not yet a full-browser
+reproduction or proof that this exact slot caused the natural incident. Native
+replays and desktop-browser replays have so far cleared correctly. Browser
+input tracing verifies the empty-scroll-update path is active in the native
+lab, but the initial API trace strips event arguments; a later CDP trace retains
+them. Further work should target the gesture conditions that leave a move in
+that slot across pointer releases, rather than claiming a failed cancellation.
+
+Primary source references:
+https://raw.githubusercontent.com/chromium/chromium/155.0.8059.84/components/input/input_router_impl.cc
+https://raw.githubusercontent.com/chromium/chromium/155.0.8059.84/third_party/blink/renderer/core/input/touch_event_manager.cc
+https://raw.githubusercontent.com/chromium/chromium/155.0.8059.84/ui/events/gesture_detection/touch_disposition_gesture_filter.cc
+
+Normal :app:testDebugUnitTest and :app:lintDebug passed after the debug fixture
+and test changes. The tablet's original screen_off_timeout=300000 was restored.
+
+Local architecture and prevention follow-up
+
+The wrapper has been refactored locally around a stable native host, explicit
+visibility ownership, complete cancellation including physical tails, guarded
+callbacks from replaced browser generations, and single-completion pause tickets.
+An unresponsive renderer now waits for the user's reload choice; actual exits
+still recover automatically. Full native/DOM move diagnostics and bounded
+per-incident snapshots improve the next natural capture. See
+../../input-architecture.txt for implementation choices, source precedents, and
+the engine design we would use if we owned the vendor's puzzle code.
+
+The debug-only early canvas policy claims explicitly selected puzzle gestures
+at touchstart. It is not enabled in the production controller. Host Chromium
+tests cover trusted dragging outside the surface, touch tap handling, genuine
+multitouch IDs, outside scrolling/buttons, dynamic surface insertion/removal,
+installation idempotency, and restoring original styles/listeners on undo.
+
+A read-only, headless Pixel Tablet AVD was used for further native regression
+work. Its provider is Google WebView 147.0.7727.138, not the physical tablet's
+Vanadium 155.0.8059.84.0. No physical-tablet input, wake, lock, install, reload,
+or restart was used for this refactor. Successful emulator tests therefore
+validate wrapper behavior, not the provider-specific natural trigger.
+
+A broader emulator run exposed two intermittent failures in legacy Compose
+removal tests: a new drag produced no DOM events, with no stranded contacts.
+A focused 50-interruption rerun passed. Those tests previously injected input
+immediately after scheduling host reinsertion and waiting for main-loop idle;
+that does not establish Compose attachment/layout readiness. The tests now
+explicitly await an attached, visible, focused, laid-out WebView before the next
+drag. The failing output is preserved, and this test-harness issue is separate
+from the captured natural phantom-contact transition.
+
+The provider report draft is provider-report-draft.txt; it has not been sent
+upstream. Full-provider reproduction and Vanadium validation remain outstanding.
+
+Future incident readiness and final local validation
+
+The user clarified this is at least the third occurrence and the second or
+third attempted permanent fix. The recurring issue is explicitly UNRESOLVED in
+../input-reliability-status.txt. Root AGENTS.md directs future sessions to that
+ledger and ../../adb-input-runbook.txt before wireless ADB investigation.
+
+Diagnostics now persist in release as well as debug builds, with full native
+browser-boundary moves/history/pressure, native routing/terminal observations,
+DOM contact lists, document identity, immutable session/provider metadata, queue
+and disk bounds, dropped-record/gap reporting, and rotating automatic failure
+snapshots. Metadata is prefixed to failure snapshots so log rotation or a later
+provider update cannot erase which build produced an older failure. Trace files
+are excluded from backups and are not uploaded. Release touch traces stay out
+of logcat. No keyboard text, cookies or page HTML are recorded by this tracer.
+
+A permission-protected content provider exports ZIPs to ADB shell even for a
+non-debuggable build. Explicit DUMP checks additionally protect its inspection
+control, allowing existing WebView debugging to be enabled/disabled without
+reloading the document. Inspection is disabled by default in release builds.
+The capture script exports private history first, then system state/screenshot,
+optional read-only CDP information, the installed APK and checksums. It checks
+that the process already exists and compares the PID afterward. Older 0.7.6
+debug builds retain the run-as fallback. No diagnostic update was installed on
+the physical tablet.
+
+A native fixture established a real phantom contact with the old cancellation
+repair disabled, then verified an automatic snapshot contains the native and
+DOM transition plus provider identity while both the broken state and original
+document remain unchanged. A signed non-debuggable .inputlab build passed
+Activity generation/lifecycle and end-to-end native/DOM ZIP export tests;
+inspection toggling preserved the same document. run-as correctly refused that
+release package. A separate test-APK UID was denied export and debugging control
+with android.permission.DUMP errors. A host capture preserved release PID 12389,
+exported a valid ZIP and copied the installed APK. Read-only CDP capture was
+verified after privileged inspection was temporarily enabled and then disabled.
+
+The final complete wrapper regression rerun passed 14 tests, including 20 dense
+five-finger replay repetitions. Targeted new automatic-snapshot/export checks
+passed afterward, and the final signed release checks passed two tests. Sixteen
+unit tests, debug/release lint tasks, debug/release builds and instrumentation
+compilation passed. See validation.txt for scope and retained output. These are
+wrapper/diagnostic checks on Google WebView 147.0.7727.138, not proof that the
+physical Vanadium 155 natural failure has been permanently corrected.

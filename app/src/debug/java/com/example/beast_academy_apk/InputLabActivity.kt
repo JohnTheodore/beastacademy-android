@@ -5,6 +5,10 @@ import android.view.ViewGroup
 import android.view.MotionEvent
 import android.view.WindowManager
 import android.webkit.WebView
+import androidx.webkit.TracingController
+import androidx.webkit.TracingConfig
+import java.io.File
+import java.io.FileOutputStream
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -19,19 +23,56 @@ import androidx.compose.ui.viewinterop.AndroidView
 class InputLabActivity : ComponentActivity() {
     internal lateinit var webView: BeastAcademyWebView
     var showHost by mutableStateOf(true)
+    internal var nativeChrome: BrowserChrome? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         DiagnosticTrace.initialize(this)
+        if (intent.getBooleanExtra("chromeTrace", false)) {
+            TracingController.getInstance().start(TracingConfig.Builder()
+                .addCategories("input", "input.scrolling", "latencyInfo", "benchmark", "renderer", "disabled-by-default-input")
+                .setTracingMode(TracingConfig.RECORD_CONTINUOUSLY).build())
+        }
         WebView.setWebContentsDebuggingEnabled(true)
         webView = BeastAcademyWebView(this, intent.getBooleanExtra("repairCancel", true)).apply {
             settings.javaScriptEnabled = true
+            if (intent.getBooleanExtra("lessonLike", false)) {
+                settings.useWideViewPort = true
+                settings.loadWithOverviewMode = true
+                settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+            }
             installInputDiagnostics()
-            loadDataWithBaseURL("https://inputlab.invalid/", FIXTURE, "text/html", "UTF-8", null)
+            if (intent.getBooleanExtra("claimCanvas", false)) {
+                check(androidx.webkit.WebViewFeature.isFeatureSupported(androidx.webkit.WebViewFeature.DOCUMENT_START_SCRIPT))
+                val policy = assets.open("puzzle-touch-policy.js").bufferedReader().use { it.readText() }
+                androidx.webkit.WebViewCompat.addDocumentStartJavaScript(this,
+                    "($policy)({selector:'canvas'});", setOf("https://inputlab.invalid"))
+            }
+            var fixture = if (intent.getBooleanExtra("scrollable", false)) {
+                FIXTURE.replace("touch-action:none;overflow:hidden", "touch-action:auto;overflow:auto")
+                    .replace("<canvas></canvas>", "<canvas style=\"height:2400px\"></canvas>")
+            } else FIXTURE
+            if (intent.getBooleanExtra("lessonLike", false)) {
+                fixture = FIXTURE.replace("touch-action:none;overflow:hidden", "touch-action:auto;overflow:hidden")
+                    .replace("initial-scale=1", "initial-scale=1,maximum-scale=1")
+                    .replace("<canvas></canvas>", "<canvas style=\"position:absolute;left:234.32px;top:190.18px;width:810px;height:461px\"></canvas>")
+                    .replace("window.probe=", """
+                      const canvas=document.querySelector('canvas');
+                      for(const type of ['touchstart','touchmove','touchend']) canvas.addEventListener(type,e=>{
+                        if(e.touches.length>1)return;
+                        if(type!=='touchstart')e.preventDefault();
+                      },{passive:false});
+                      window.probe=
+                    """.trimIndent())
+            }
+            loadDataWithBaseURL("https://inputlab.invalid/", fixture, "text/html", "UTF-8", null)
         }
         if (intent.getBooleanExtra("nativeHost", false)) {
-            setContentView(makeHost())
+            val chrome = BrowserChrome(this) {}
+            nativeChrome = chrome
+            chrome.browserHost.addView(webView, ViewGroup.LayoutParams(-1, -1))
+            setContentView(chrome)
         } else {
             setContent {
                 Box(Modifier.fillMaxSize()) {
@@ -52,9 +93,19 @@ class InputLabActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        if (intent.getBooleanExtra("chromeTrace", false) && TracingController.getInstance().isTracing) stopChromeTrace {}
+        nativeChrome?.dispose()
+        webView.cancelActiveTouches("lab destroyed")
         (webView.parent as? ViewGroup)?.removeView(webView)
         webView.destroy()
         super.onDestroy()
+    }
+
+    fun stopChromeTrace(onFinished: () -> Unit) {
+        val output = object : FileOutputStream(File(filesDir, "chrome-input-trace.json")) {
+            override fun close() { super.close(); onFinished() }
+        }
+        if (!TracingController.getInstance().stop(output) { it.run() }) output.close()
     }
 
     companion object {

@@ -1,0 +1,139 @@
+Wireless ADB: preserve and diagnose frozen puzzle input
+=====================================================
+Read incidents/input-reliability-status.txt first. The recurring failure remains
+unresolved after multiple incidents and attempted fixes. Preserve evidence before
+trying recovery. Do not assume a previous passing regression proves this event
+has the same cause.
+
+1. Connect without disturbing the session
+----------------------------------------
+Ask for current pairing IP:port/code and connect IP:port if not already known.
+The pairing and connection ports differ and may change. Use adb pair followed
+by adb connect; never retain pairing codes in the repository. Use adb devices -l
+and an explicit -s SERIAL for every device command. Confirm the package/PID with
+pidof and the installed version/provider using read-only shell commands.
+
+Do not restart, reload, reinstall, force-stop, change WebView providers, clear
+storage, navigate, send touches, wake/unlock/lock, or run screen-off experiments
+until explicitly authorized. Do not ask the child to "try again" before capture:
+additional interaction can obscure the transition. If the tablet is asleep,
+collect read-only evidence if accessible; do not wake it automatically.
+
+2. Capture immediately
+----------------------
+From the repository, run:
+  scripts/capture-input-diagnostics.sh SERIAL PRIVATE_OUTPUT_DIRECTORY
+
+The script checks that the app is already running, exports its ring first,
+captures app logcat, input/window/power/provider/package state and a screenshot,
+optionally reads existing debug CDP state, and compares the PID afterward.
+It never enables debugging, sends input, installs a listener, or navigates.
+It also copies the installed base APK and writes SHA256SUMS when a host hash
+tool is available. Version labels alone cannot identify locally modified builds.
+Host requirements are bash, adb, and unzip; Node with fetch/WebSocket support
+adds read-only page state, and curl provides a metadata-only fallback.
+Output directory/files are private (0700/0600). Inspect capture-state.txt and
+export validation/errors; do not assume a command's exit status means the
+archive is complete. Older installed debug APKs fall back to run-as tar.
+
+New builds retain a bounded private trace even with debugging disabled. A
+read-only content provider exports a ZIP to shell/system callers holding
+android.permission.DUMP:
+  adb -s SERIAL exec-out content read --uri \
+    content://com.example.beast_academy_apk.input-diagnostics/snapshot > TRACE.zip
+
+Ordinary apps lack this permission. The app does not request DUMP for itself.
+No cookies, storage values, account text, keyboard text, or page HTML are logged
+by the touch tracer. Trace files are excluded from cloud backup/device transfer.
+Native pointer IDs/coordinates/pressure/history, DOM contact lists, document
+identity, provider/app version, navigation path without query/fragment, lifecycle,
+and cancellation are private diagnostic data. There is no automatic upload.
+Release builds keep WebView debugging off by default and do not emit touch
+traces to logcat. After the initial private capture, shell-authorized inspection
+can enable the existing WebView's debug endpoint without a reload:
+  adb -s SERIAL shell content call \
+    --uri content://com.example.beast_academy_apk.input-diagnostics \
+    --method enable-webview-debugging
+
+Capture PID/document identity and inspect through a new temporary ADB forward.
+This privileged control explicitly checks DUMP on the Binder caller, including
+ContentProvider.call (whose framework does not apply openFile read permissions).
+When finished with inspection that you enabled, disable it again:
+  adb -s SERIAL shell content call \
+    --uri content://com.example.beast_academy_apk.input-diagnostics \
+    --method disable-webview-debugging
+
+This changes inspection availability, not the loaded document, and does not
+persist across process death. If the UI thread cannot acknowledge the control,
+preserve its reported uncertainty and the private export; do not restart it.
+
+The persistent writer bounds both disk history and its pending memory queue.
+Exports report droppedRecords, and disk history retains TRACE_GAP markers when
+queue overflow occurs. Inspect both; any gap limits replay fidelity. A
+confirmed idle DOM/native mismatch preserves the surrounding ring without
+resetting the browser. Multiple incident snapshots rotate, so an older failure
+does not block collecting a newer one. If a provider cannot install document-
+start/web-message diagnostics, the trace records that limitation.
+
+An old release without this exporter may have no readable private trace. Preserve
+system evidence anyway. Do not overwrite the running APK to enable diagnostics.
+If the PID changes during capture, record it as an exit/recovery event rather
+than pretending the original process survived.
+
+3. Preserve identity and compare the input boundaries
+----------------------------------------------------
+Record app version/build, WebView provider/version, Android/model, original PID,
+window/lifecycle state, CDP target and performance.timeOrigin if already available.
+Inspect the saved native release/cancel stream against trusted DOM contact IDs.
+Find the last working gesture and first broken gesture; preserve both.
+
+Questions that distinguish mechanisms:
+- Did Activity/host/WebView receive every release and the final native UP?
+- Did CANCEL contain every live pointer, including nonzero IDs?
+- Did the host detach, lose focus, pause, show an overlay, or intercept?
+- Did a moved contact appear in the DOM after its release, without a new press?
+- Are phantom targets Document or a real element?
+- Is the puzzle rejecting genuine events because its touch list includes extras?
+- Is JavaScript responsive, and is the original puzzle/document unchanged?
+
+Use recorded timestamps/history/coordinates to replay in the separate inputlab.
+Distinguish native Android injection from desktop/CDP injection, which uses a
+different gesture-compensation path. Label interpolated/missing samples honestly.
+Do not infer the internal Chromium ordering solely from DOM symptoms.
+
+4. Recovery only after evidence, within the user's authorization
+---------------------------------------------------------------
+If a live workaround is authorized, capture identity before and after it and
+leave raw browser diagnostics intact. The October 19 engine adapter was scoped
+to two IDs proven phantom in that particular document; do not hardcode [1,2]
+for a new incident. Verify the engine and its ownership before adapting anything.
+Preserve real newly pressed contacts and provide undo. Do not rewrite global
+TouchEvent prototypes or silently filter all input down to one finger.
+
+User-confirmed dragging after a workaround establishes recovery, not prevention.
+A native APK replacement requires explicit restart/update authorization. "Keep
+going" authorizes continued investigation, not destruction of the reproduction.
+
+5. Make this evidence available to the next session
+--------------------------------------------------
+Copy the complete private capture to:
+  /home/jt/.local/state/beastacademy/incidents/INCIDENT_DIRECTORY/
+Keep directories 0700, files 0600, and a SHA256SUMS manifest. Save relevant source
+revisions, exact commands/test output, hypotheses that failed, and identity before/
+after live changes. Preserve logs before repeating a failed test. Do not publish
+private captures or copy authentication secrets into tracked files.
+
+Update incidents/input-reliability-status.txt with observations, attempted fixes,
+what was actually deployed, user validation, and what remains unproved. Link new
+sanitized incident notes from this ledger. Consult the earlier attempts before
+repeating experiments. Require a regression for the actual failure mechanism,
+plus unaffected multitouch, outside scrolling, lesson controls, and lifecycle
+checks before calling a candidate a permanent fix.
+
+Isolated tests
+--------------
+Build -PinputLab=true and verify applicationId ends in .inputlab before installing
+or instrumenting. Prefer a disposable/read-only emulator. Never instrument the
+child's main package. The physical tablet's Vanadium version must be recorded
+separately from the emulator/Desktop Chromium version. Native fixture tests must
+wait for host attachment/layout readiness before injecting a new gesture.
