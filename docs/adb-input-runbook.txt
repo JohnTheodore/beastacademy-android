@@ -96,6 +96,22 @@ Questions that distinguish mechanisms:
 - Is the puzzle rejecting genuine events because its touch list includes extras?
 - Is JavaScript responsive, and is the original puzzle/document unchanged?
 
+The frontend audit also found independent gesture-owner/cancellation defects in
+both shared Banvas implementations. Capture the frontend deployment/asset version,
+which shared engine/control is active, and owner/changed/remaining contact IDs
+when available. Do not assume every lesson or feature flag uses the same engine.
+An engine left dragging after touchcancel is different evidence from contacts
+reappearing in trusted DOM TouchLists without a native cancel. See
+frontend-touch-audit.txt and touch-reliability-plan.txt for scope and test limits.
+
+Version 0.7.8 installs a guarded input compatibility module on each matching new
+page. Capture input-compat trace records and __beastInputCompatStatus alongside
+raw DOM contacts. Record whether each engine patched, declined its deployment or
+signature, or lacked document-start support. The read-only CDP capture includes
+this status. A reload reinstalls the patch but destroys the preserved document;
+do not reload to investigate an unsupported or frozen session. Engine cleanup
+is not proof that every lesson view cleared its own transient state.
+
 Use recorded timestamps/history/coordinates to replay in the separate inputlab.
 Distinguish native Android injection from desktop/CDP injection, which uses a
 different gesture-compensation path. Label interpolated/missing samples honestly.

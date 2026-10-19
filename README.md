@@ -1,6 +1,6 @@
 # Beast Academy Android Wrapper
 
-![Version](https://img.shields.io/badge/version-0.7.7-blue.svg)
+![Version](https://img.shields.io/badge/version-0.7.8-blue.svg)
 
 A streamlined Android application that provides a native container for the Beast Academy online learning platform. This project is unofficial, and it's not affiliated with beastacademy.com at all. I built this for my kids.
 
@@ -14,6 +14,19 @@ A streamlined Android application that provides a native container for the Beast
 ## Overview
 
 This project is a WebView-based Android application designed to provide a seamless experience for Beast Academy users on Android devices.
+
+### 0.7.8 Lesson Input Compatibility
+
+Installs a guarded compatibility patch before each new Beast Academy document,
+including reloads. For qualified shared engines, it isolates a drag's owning
+finger, tolerates previously ended contacts reappearing, and clears engine input
+tracking on interruption without synthesizing a drop. Unknown website versions
+or changed handlers keep their original behavior and report limited protection.
+
+This is an incremental release. Per-tool cancellation cleanup, separate controls,
+and real-lesson validation on the affected Vanadium provider remain incomplete;
+the recurring incident stays open. See [implementation and limits](docs/retired-touch-guard.txt)
+and [release validation](docs/releases/v0.7.8.txt).
 
 ### 0.7.7 Input and Session Reliability
 

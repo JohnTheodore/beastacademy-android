@@ -22,11 +22,30 @@ Known evidence and fix attempts
 - A targeted, session-local engine adapter excluded the already-known phantom
   IDs without modifying raw browser events. User confirmed "Dragging works now".
   This is recovery for that document, not a persistent provider fix.
+- October 19 frontend audit downloaded v12.119.0 first-party bundles. All 194
+  registered renderer entries lead to the shared Banvas engine; a second bundled
+  implementation also exists. Original-function tests reproduce missing cancel
+  cleanup and wrong-finger completion in both; desktop trusted-touch tests confirm
+  these behaviors in the main engine. Drawing/slider contract gaps also reproduce
+  locally. These are separate frontend defects, not proof of the source of the
+  captured phantom DOM contacts. No physical session was touched or build deployed.
+  See ../frontend-touch-audit.txt and ../touch-reliability-plan.txt.
 - Version 0.7.7 (14) refactor: stable native host, complete stream boundaries, explicit
   visibility state, generation guards, idempotent asynchronous pauses, and
   wait/reload for a hung renderer. Not installed on the physical tablet.
 - Early canvas ownership policy is experimental and debug-only. Not enabled in
   the production lesson. Browser/emulator passes do not establish a Vanadium fix.
+- Version 0.7.8 adds a document-start compatibility module, reapplied on every
+  new document/reload, for qualified v12.119.0 shared engines. It excludes only
+  previously observed ended contacts from the engine's view, tracks single-piece
+  ownership and clears engine tracking on cancellation without normal release.
+  Pinned browser tests pass modeled phantom contacts and owner/release sequences;
+  isolated Android checks verify 100 reloads. Unknown library versions/signatures
+  fall back to original handling. Per-tool cancellation and separate controls
+  remain unfinished; real lessons and the affected provider are unvalidated.
+  See ../retired-touch-guard.txt and ../releases/v0.7.8.txt. This is an incremental
+  release, not completion of the holistic plan. Tablet still not updated.
+  Engineer email drafted at ../beast-academy-engineer-email.txt; nothing sent.
 - Persistent diagnostics, automatic incident snapshots, shell-protected release
   export and no-reload inspection controls are implemented locally. Signed,
   non-debuggable emulator tests verify export/inspection without document

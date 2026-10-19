@@ -1,0 +1,129 @@
+Beast Academy frontend touch audit
+=================================
+2026-10-19. Investigation only; no app or tablet changes.
+
+Scope and acquisition
+---------------------
+Downloaded the first-party scripts referenced by the homepage and actual school
+lesson entry, then followed the emitted asynchronous chunk references to closure.
+Release: /dist/v12.119.0/. Acquired 34 JavaScript files and two stylesheets,
+25,052,291 bytes in total. This includes the trainer, classroom/school, library,
+theater, profile, beast builder, parent, office, marketing and shared bundles.
+Every numeric asynchronous chunk discovered in these bundles is accounted for.
+Chunk 121 is supplied as bundle_vendor.js; bundle_121.js returns 404.
+
+No login was needed to download these shipped assets. No device commands, account
+changes, submissions, lesson navigation or tablet inspection were performed.
+This is the deployed browser code, not their unserved original source repository.
+No source-map URL is present in the main core bundle. Authenticated server data,
+other releases, dynamically supplied lesson content and undiscovered entrypoints
+are outside this acquisition. Collection of a bundle does not mean every line
+of its business logic has been manually audited. Review concentrated on input
+architecture across the collected frontend, rather than one lesson algorithm.
+
+Private durable source, extracted modules, dependency index, source hashes and
+reproducers:
+  /home/jt/.local/state/beastacademy/frontend-review/2026-10-19/
+Do not commit downloaded vendor bundles, account HTML or incident state.
+
+Primary downloadable sources:
+  https://beastacademy.com/dist/v12.119.0/bundle_core.js
+  https://beastacademy.com/dist/v12.119.0/bundle_vendor.js
+  https://beastacademy.com/dist/v12.119.0/bundle_trainer.js
+  https://beastacademy.com/dist/v12.119.0/bundle_478.js
+
+Shared architecture established from source
+------------------------------------------
+The lesson factory, core module 74240 in chunk 371, creates a Banvas host. Core
+module 3908 selects the renderer through registry module 52782. That registry
+contains 194 renderer entries; all 194 have a dependency path to Banvas module
+54145, which delegates interaction to mouse/touch module 32075. Examples include
+toothpicks, polyominoes, drag/drop, rectangle drawing, clocks, number lines, mirror
+art and sliding tiles. This proves shared infrastructure, not 194 live lesson
+executions or identical visible consequences in every renderer.
+
+A second Banvas implementation is embedded in vendor module 55417, with named
+frontend/banvas/Banvas.ts and frontend/banvas/util/BanvasMouse.ts modules. Its
+engine directory contains 499 modules across 144 named families. Consumers in
+chunk 478 include another host factory and ScrollBanvas. It also needs coverage;
+the runtime selection and flags must be checked in real authenticated lessons.
+
+The frozen-session onMouseEvent function preserved from October 19 is byte-for-
+byte identical to the downloaded main-engine function. This ties that particular
+handler to the incident. It does not establish that every downloaded function
+was loaded by that incident's document.
+
+Confirmed behavior in original functions
+---------------------------------------
+1. Both Banvas implementations register touchstart/move/end, but no touchcancel.
+   Cancelling a drag leaves mouseDownView and isDragging active and emits no
+   onMouseRelease. A move arriving without another start can continue the old
+   drag in the isolated event harness. A fresh touchstart can replace some of
+   this state; this alone does not establish a permanent freeze.
+
+2. Neither implementation ties the drag to a touch identifier. Press A, drag A,
+   add B, then lift B: the global touchend handler releases A's piece while A is
+   still down. Desktop Chromium 156.0.8078.4 reproduced this with trusted events:
+   touchend changed=[20], active=[10], followed by one release callback.
+
+3. Coordinate handling has different secondary-contact problems. Main helper
+   module 98680 prefers targetTouches[0] to changedTouches[0]. If A ends while B
+   remains, release coordinates can come from B. The embedded TypeScript engine
+   uses changedTouches[0]; its unguarded global move path can move A's drag using
+   B's changed coordinates. Controlled function tests reproduced both cases.
+
+4. Both engines reject new canvas touch handling when touches.length > 1.
+   Passing one genuine contact plus two phantom contacts prevents a fresh drag.
+   This explains sensitivity to the captured bad browser TouchLists; it does
+   not show that the engine generated those phantom contacts.
+
+5. Drawing overlay DrawvasView, module 10721 in chunk 478, also registers no
+   touchcancel. A controlled test leaves its mouseDown/pencil stroke active
+   after cancellation. Its ordinary touchend cleanup succeeds.
+
+6. RangerSlider, core module 982, starts touchmove tracking but ends on mouseup,
+   with no touchend or touchcancel registration. Controlled tests show its active
+   state and document touchmove listener remain after touchend until mouseup or
+   unmount. A browser-generated compatibility mouseup may mask this, so a visible
+   real-page slider malfunction is not yet established.
+
+Additional source review candidates
+----------------------------------
+Custom ScrollArea (22896), SwipeHandler (24870), drawing drag controller (98276),
+BeastPartBorder rotation (77645), and trainer pointer-driven animation handlers
+(158) have incomplete-looking interruption/ownership contracts. Their source was
+reviewed, but user-visible failures have not been established for these paths.
+Framework/vendor libraries do contain cancellation handling; do not claim the
+entire website lacks touchcancel. The finding is about the custom input paths.
+
+The main lesson canvas was captured with touch-action:auto, and Banvas skips
+preventDefault on touchstart. This leaves browser gesture arbitration relevant.
+Other surfaces have explicit touch-action rules. A scoped early ownership policy
+may help avoid the hypothesized provider path, but is still experimental.
+
+Validation and limits
+---------------------
+Private scripts:
+  index-bundles.cjs, trace-registry.cjs, renderer-coverage.json
+  reproduce.cjs, reproduce.cjs --modern
+  controls-contract.cjs, browser-contract.cjs
+  source-comparison.txt, downloads.json, validation-results.json, SHA256SUMS
+
+The function harness executes extracted original functions with controlled
+geometry and dependencies, not a rewritten model of the engine. Both engine
+variants pass ordinary drag cleanup and reproduce the specified edge cases.
+The desktop browser harness uses original main-engine interaction functions,
+a generic piece, and touch-action:none to isolate their event contract. It
+confirms trusted browser cancellation and second-finger release behavior. It
+does not test the complete vendor UI, puzzle persistence, Android native routing
+or the Pixel Tablet's Vanadium provider. CDP touchEnd arguments identify contacts
+to release; the regression verifies changed and remaining IDs explicitly.
+
+None of these results supersedes the natural incident: native releases were
+complete, trusted DOM contacts reappeared, and no native cancellation occurred
+in that gesture. The frontend weaknesses are real additional failure mechanisms;
+they are not a demonstrated source of those browser-supplied phantom contacts.
+The recurring frozen input incident remains unresolved. No new production fix,
+deployment, upstream report or user validation occurred during this audit.
+
+Implementation plan: touch-reliability-plan.txt.

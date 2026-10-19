@@ -119,6 +119,7 @@ class BeastAcademyWebViewController(
     private fun createMainWebView(): WebView {
         val wv = BeastAcademyWebView(activity)
         wv.installInputDiagnostics()
+        LessonInputCompatibility.install(wv)
         val gen = generation.incrementAndGet()
         rendererUnresponsive = false
         

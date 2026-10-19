@@ -66,6 +66,21 @@ class DiagnosticExportInstrumentedTest {
                 }
                 if (!ready) SystemClock.sleep(25)
             }
+            // A laid-out native view can precede the new document's compositor
+            // surface. Wait for that surface and focus before testing DOM export.
+            val painted = CountDownLatch(1)
+            scenario.onActivity {
+                browser(it).requestFocus()
+                browser(it).postVisualStateCallback(1, object : WebView.VisualStateCallback() {
+                    override fun onComplete(requestId: Long) { painted.countDown() }
+                })
+            }
+            check(painted.await(5, TimeUnit.SECONDS)) { "Fixture was not presented" }
+            val focusDeadline = SystemClock.uptimeMillis() + 5000
+            while (evaluate("document.hasFocus()") != "true") {
+                check(SystemClock.uptimeMillis() < focusDeadline) { "Fixture document did not gain focus" }
+                SystemClock.sleep(25)
+            }
             val down = SystemClock.uptimeMillis()
             for (action in intArrayOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE, MotionEvent.ACTION_UP)) {
                 val properties = arrayOf(MotionEvent.PointerProperties().apply { id = 0; toolType = MotionEvent.TOOL_TYPE_FINGER })
@@ -75,8 +90,9 @@ class DiagnosticExportInstrumentedTest {
                 try { assertTrue(instrumentation.uiAutomation.injectInputEvent(event, true)) } finally { event.recycle() }
                 SystemClock.sleep(40)
             }
+            val terminalDeadline = SystemClock.uptimeMillis() + 5000
             while (evaluate("window.__beastInputTraceLastTouch?.type==='touchend'") != "true") {
-                check(SystemClock.uptimeMillis() < deadline) { "Document-start DOM recorder did not capture the touch stream" }
+                check(SystemClock.uptimeMillis() < terminalDeadline) { "Document-start DOM recorder did not capture the touch stream" }
                 SystemClock.sleep(25)
             }
             val descriptor = instrumentation.uiAutomation.executeShellCommand(

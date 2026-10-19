@@ -1,0 +1,161 @@
+{
+  "deployment": "v12.119.0",
+  "scope": "Sanitized downloaded source inventory; see frontend-touch-audit.txt for acquisition limits",
+  "assets": [
+    {
+      "name": "bundle.css",
+      "bytes": 646396,
+      "sha256": "d245d5bfc5353bd22033b5a76a9196380f156312f7f34c9107e02312b9770fab"
+    },
+    {
+      "name": "bundle_10.js",
+      "bytes": 58511,
+      "sha256": "61ac421d790f83b84ecf929b128f3f9bdd33b505ebdf9df410166a9e8b9412e0"
+    },
+    {
+      "name": "bundle_117.js",
+      "bytes": 21989,
+      "sha256": "96e36d5d11acb48bf76b3641f50c849b71aa88033aaa04308b82c7f920eef682"
+    },
+    {
+      "name": "bundle_271.js",
+      "bytes": 854,
+      "sha256": "0bb73ddfb6af1b786533276a106b730fd9763c05881961edff6470ef47de10d1"
+    },
+    {
+      "name": "bundle_371.js",
+      "bytes": 22220,
+      "sha256": "ef047ce21ba070e67904b58eca1e26179f3c5a8488902a644fcb79562db6ef84"
+    },
+    {
+      "name": "bundle_389.js",
+      "bytes": 2079,
+      "sha256": "178fb138b98324b4f51e9a52f8db165a12b1183f65131f623a702dc5652eba51"
+    },
+    {
+      "name": "bundle_438.js",
+      "bytes": 237230,
+      "sha256": "666288f79c7757a10170e9165129a1665319734b486885e1b7acf933ad49bdd0"
+    },
+    {
+      "name": "bundle_478.js",
+      "bytes": 200358,
+      "sha256": "fef84f23c8f33df032b5355777c942a91c3b5d7f8440a15249353fab67e7b2d5"
+    },
+    {
+      "name": "bundle_491.js",
+      "bytes": 550,
+      "sha256": "935a46da8623ea01f94a498c0b913b552499e658f356fc6c2952f63a6575e1cd"
+    },
+    {
+      "name": "bundle_606.js",
+      "bytes": 21727,
+      "sha256": "cdd8d3228e20a2058c60984e6d9a0fef432f792768d72953d00c569176868d0c"
+    },
+    {
+      "name": "bundle_683.js",
+      "bytes": 3221,
+      "sha256": "32ec2341b82b3df8dc859cb7920620c209fa8acc3114842478dcb2a5e89ebecc"
+    },
+    {
+      "name": "bundle_758.js",
+      "bytes": 1590,
+      "sha256": "566afc299c5684b4a9d4825d38cd3bffb697ec24b7802b2b371fd8c8bb024031"
+    },
+    {
+      "name": "bundle_801.js",
+      "bytes": 16635,
+      "sha256": "fe667a1b37387f1b49779d6d0d374bdbdb6153d6776a1fb5750330870053fe2e"
+    },
+    {
+      "name": "bundle_851.js",
+      "bytes": 36095,
+      "sha256": "061d6c4d4dccb73a801ded6423f308c3761f4d25c158cccb62a4076d190352d0"
+    },
+    {
+      "name": "bundle_979.js",
+      "bytes": 1366,
+      "sha256": "47866cdc459b7c51bec580dcf4162e09d8b6ee66fdbcf0049251eb74ca87cc6b"
+    },
+    {
+      "name": "bundle_984.js",
+      "bytes": 49861,
+      "sha256": "f6c9b970e4ba19332bd68f0e2047806da13ae83583b0d9d76a3316b695f37054"
+    },
+    {
+      "name": "bundle_beastbuilder.js",
+      "bytes": 78362,
+      "sha256": "7de5be2224575c72f955cbaae1d8f62eba8274c9a02d9a1c8b0a6a2558756d13"
+    },
+    {
+      "name": "bundle_core.js",
+      "bytes": 6994135,
+      "sha256": "10f2992e52b4347d5ca699d40ae272a4b7d0a6d5703c6f59666ec8a32abc8ce4"
+    },
+    {
+      "name": "bundle_elev.js",
+      "bytes": 4197977,
+      "sha256": "e8837b96f1ef2a818d5d830b119cb62453371c1b6d300ecfe30b4b99a9065d40"
+    },
+    {
+      "name": "bundle_elev_wf.js",
+      "bytes": 1071739,
+      "sha256": "323f803cdd46472d70ba2b9ec1ec2f5fd163ed2e904494c64f021ca4d79fa582"
+    },
+    {
+      "name": "bundle_init.js",
+      "bytes": 13140,
+      "sha256": "1992adc45ddaf090fc71f0ebb6a301d30a0c3b35b9aab2c528aeafa47031c465"
+    },
+    {
+      "name": "bundle_lab.js",
+      "bytes": 35497,
+      "sha256": "022ff1d55663f04c1cef9e8b946da6b7b1f974f852723e64ad94e396617904f5"
+    },
+    {
+      "name": "bundle_library.js",
+      "bytes": 72476,
+      "sha256": "e3470ba1fabe4f3b9f0e9453e2bb0a84b56bd8aef109ad022f591d6cdf1dc525"
+    },
+    {
+      "name": "bundle_office.js",
+      "bytes": 391902,
+      "sha256": "946400869e5ddcb44e41cbb1944b5c1de5ecd6fc2e9c0f6a27f5b705dd46808c"
+    },
+    {
+      "name": "bundle_parent.js",
+      "bytes": 205398,
+      "sha256": "148500ab836a389522a6ed52654df3fa59b24be7f3cba9c2adf8c0e27ceb305a"
+    },
+    {
+      "name": "bundle_profile.js",
+      "bytes": 62212,
+      "sha256": "9f96f4f2a7467ba9cb5b77c2ce1ed92d76b325a359e88e64fb3e4b5d179ff212"
+    },
+    {
+      "name": "bundle_school.js",
+      "bytes": 357628,
+      "sha256": "4e0d10a28070628e33a9a7982b681412043ff5abbd306b21bd9de68bf6b420a2"
+    },
+    {
+      "name": "bundle_theater.js",
+      "bytes": 28906,
+      "sha256": "5c69c8bf5e8bd7938c970cacd4e80f1ac3a1f8c2826e5c5a0761891e62d0dcc1"
+    },
+    {
+      "name": "bundle_trainer.js",
+      "bytes": 213558,
+      "sha256": "1e4570f6263e892501c252bc434c1ef48974923d0ae19a385379de63ed9caf0f"
+    },
+    {
+      "name": "bundle_vendor.js",
+      "bytes": 8504152,
+      "sha256": "72336f21d30d70e5c9ce2ced6d596f9d060739b2405de688d5e1c74c766cc61d"
+    },
+    {
+      "name": "main.css",
+      "bytes": 4006,
+      "sha256": "6445838229b321ab6d4dd9fa77562a9bb910249982d1b0c0903872f144078aac"
+    }
+  ]
+}

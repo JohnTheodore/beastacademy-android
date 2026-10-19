@@ -1,0 +1,2334 @@
+{
+  "deployment": "v12.119.0",
+  "scope": "Source dependency mapping, not 194 live lesson validations",
+  "renderers": [
+    {
+      "rendererId": 4,
+      "names": [
+        "SKIP_COUNTING"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 5,
+      "names": [
+        "SINGLE_INPUT"
+      ],
+      "banvasModule": 41496,
+      "sharedEnginePath": [
+        41496,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 6,
+      "names": [
+        "DRAGON_DROP"
+      ],
+      "banvasModule": 48356,
+      "sharedEnginePath": [
+        48356,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 7,
+      "names": [
+        "MULTIPLE_CHOICE"
+      ],
+      "banvasModule": 4817,
+      "sharedEnginePath": [
+        4817,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 8,
+      "names": [
+        "QUADRILATERAL_POINTS"
+      ],
+      "banvasModule": 12474,
+      "sharedEnginePath": [
+        12474,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 9,
+      "names": [
+        "CROSSNUMBER"
+      ],
+      "banvasModule": 22345,
+      "sharedEnginePath": [
+        22345,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 10,
+      "names": [
+        "TOOTHPICKS"
+      ],
+      "banvasModule": 36326,
+      "sharedEnginePath": [
+        36326,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 11,
+      "names": [
+        "BLOCK_MOUNTAINS"
+      ],
+      "banvasModule": 65237,
+      "sharedEnginePath": [
+        65237,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 12,
+      "names": [
+        "DRAW_RECTANGLE"
+      ],
+      "banvasModule": 339,
+      "sharedEnginePath": [
+        339,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 13,
+      "names": [
+        "FENCE_EMIN"
+      ],
+      "banvasModule": 22404,
+      "sharedEnginePath": [
+        22404,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 14,
+      "names": [
+        "DISSECT_RECTANGLES"
+      ],
+      "banvasModule": 41325,
+      "sharedEnginePath": [
+        41325,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 15,
+      "names": [
+        "MULTIPLICATION_TABLE"
+      ],
+      "banvasModule": 40354,
+      "sharedEnginePath": [
+        40354,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 16,
+      "names": [
+        "SQUAREBOTS"
+      ],
+      "banvasModule": 65023,
+      "sharedEnginePath": [
+        65023,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 17,
+      "names": [
+        "SINGLE_INPUT_INTERACTIVE"
+      ],
+      "banvasModule": 83322,
+      "sharedEnginePath": [
+        83322,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 18,
+      "names": [
+        "MCNUGGET_CHART"
+      ],
+      "banvasModule": 39038,
+      "sharedEnginePath": [
+        39038,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 19,
+      "names": [
+        "MISSING_PARENTHESES"
+      ],
+      "banvasModule": 71738,
+      "sharedEnginePath": [
+        71738,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 20,
+      "names": [
+        "DISTRIBUTIVE_BLANKS"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 21,
+      "names": [
+        "HUNDREDS_CHART"
+      ],
+      "banvasModule": 2819,
+      "sharedEnginePath": [
+        2819,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 22,
+      "names": [
+        "SKIP_COUNTING_CROSSWORD"
+      ],
+      "banvasModule": 23514,
+      "sharedEnginePath": [
+        23514,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 23,
+      "names": [
+        "MULTIPLE_INPUT"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 24,
+      "names": [
+        "KANGAROOSTER_SHIP"
+      ],
+      "banvasModule": 17892,
+      "sharedEnginePath": [
+        17892,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 26,
+      "names": [
+        "DISTRIBUTIVE_FACTORING_BLANKS"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 27,
+      "names": [
+        "TIME_INPUT"
+      ],
+      "banvasModule": 15267,
+      "sharedEnginePath": [
+        15267,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 28,
+      "names": [
+        "MAZE_ESCAPE"
+      ],
+      "banvasModule": 29858,
+      "sharedEnginePath": [
+        29858,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 29,
+      "names": [
+        "TOOTHPICK_REMOVAL"
+      ],
+      "banvasModule": 42443,
+      "sharedEnginePath": [
+        42443,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 30,
+      "names": [
+        "SINGLE_INPUT_WITH_ALTERNATIVE"
+      ],
+      "banvasModule": 51905,
+      "sharedEnginePath": [
+        51905,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 31,
+      "names": [
+        "ARRANGING_SQUARES"
+      ],
+      "banvasModule": 62631,
+      "sharedEnginePath": [
+        62631,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 32,
+      "names": [
+        "SKIP_COUNTING_SPECIAL"
+      ],
+      "banvasModule": 28269,
+      "sharedEnginePath": [
+        28269,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 33,
+      "names": [
+        "MULTIPLE_CHOICE_UNITS"
+      ],
+      "banvasModule": 29538,
+      "sharedEnginePath": [
+        29538,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 34,
+      "names": [
+        "CLOCK_INPUT"
+      ],
+      "banvasModule": 21988,
+      "sharedEnginePath": [
+        21988,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 35,
+      "names": [
+        "HOPALONG"
+      ],
+      "banvasModule": 94914,
+      "sharedEnginePath": [
+        94914,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 36,
+      "names": [
+        "HIDDEN_MESSAGE"
+      ],
+      "banvasModule": 45515,
+      "sharedEnginePath": [
+        45515,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 37,
+      "names": [
+        "MEASURE_TOOL"
+      ],
+      "banvasModule": 88894,
+      "sharedEnginePath": [
+        88894,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 38,
+      "names": [
+        "BUBBLE_GAME"
+      ],
+      "banvasModule": 38066,
+      "sharedEnginePath": [
+        38066,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 39,
+      "names": [
+        "PYRAMID_DESCENT"
+      ],
+      "banvasModule": 28440,
+      "sharedEnginePath": [
+        28440,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 40,
+      "names": [
+        "MULTIPLICATION_CHART"
+      ],
+      "banvasModule": 13834,
+      "sharedEnginePath": [
+        13834,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 41,
+      "names": [
+        "DIAGRAM_MULTIPLE_CHOICE"
+      ],
+      "banvasModule": 4817,
+      "sharedEnginePath": [
+        4817,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 42,
+      "names": [
+        "DIAGRAM_DRAG_AND_DROP"
+      ],
+      "banvasModule": 48356,
+      "sharedEnginePath": [
+        48356,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 43,
+      "names": [
+        "RUBBER_BAND_TRIANGLES"
+      ],
+      "banvasModule": 30870,
+      "sharedEnginePath": [
+        30870,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 44,
+      "names": [
+        "REARRANGING_EXPRESSION"
+      ],
+      "banvasModule": 55793,
+      "sharedEnginePath": [
+        55793,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 45,
+      "names": [
+        "GUMBALL_BOTS"
+      ],
+      "banvasModule": 89716,
+      "sharedEnginePath": [
+        89716,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 46,
+      "names": [
+        "FRACTION_SCALE"
+      ],
+      "banvasModule": 17052,
+      "sharedEnginePath": [
+        17052,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 47,
+      "names": [
+        "HUNDREDS_CHART_SELECT"
+      ],
+      "banvasModule": 74203,
+      "sharedEnginePath": [
+        74203,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 48,
+      "names": [
+        "ARITHMETIC_DRILL"
+      ],
+      "banvasModule": 7801,
+      "sharedEnginePath": [
+        7801,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 49,
+      "names": [
+        "ADDING_SQUARES"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 50,
+      "names": [
+        "FILL_DRILL"
+      ],
+      "banvasModule": 19574,
+      "sharedEnginePath": [
+        19574,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 51,
+      "names": [
+        "POLYOMINOES"
+      ],
+      "banvasModule": 78170,
+      "sharedEnginePath": [
+        78170,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 52,
+      "names": [
+        "BRIDGE_BUILDING"
+      ],
+      "banvasModule": 78170,
+      "sharedEnginePath": [
+        78170,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 53,
+      "names": [
+        "POINT_CONNECTION"
+      ],
+      "banvasModule": 12474,
+      "sharedEnginePath": [
+        12474,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 54,
+      "names": [
+        "MULTIPLE_CHOICE_POINT_CONNECTION"
+      ],
+      "banvasModule": 67735,
+      "sharedEnginePath": [
+        67735,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 55,
+      "names": [
+        "ABSTRACT_ART"
+      ],
+      "banvasModule": 24611,
+      "sharedEnginePath": [
+        24611,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 56,
+      "names": [
+        "EQUIVALENT_FRACTIONS"
+      ],
+      "banvasModule": 86587,
+      "sharedEnginePath": [
+        86587,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 57,
+      "names": [
+        "SNOWBALL_GAME"
+      ],
+      "banvasModule": 6166,
+      "sharedEnginePath": [
+        6166,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 58,
+      "names": [
+        "SKIP_COUNTING_PARTITION"
+      ],
+      "banvasModule": 86797,
+      "sharedEnginePath": [
+        86797,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 59,
+      "names": [
+        "SHIKAKU"
+      ],
+      "banvasModule": 28822,
+      "sharedEnginePath": [
+        28822,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 60,
+      "names": [
+        "DISTRIBUTIVE_BLANKS_2X2"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 61,
+      "names": [
+        "AREA_MODEL"
+      ],
+      "banvasModule": 76342,
+      "sharedEnginePath": [
+        76342,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 62,
+      "names": [
+        "STRAIGHT_TRIANGLE"
+      ],
+      "banvasModule": 3228,
+      "sharedEnginePath": [
+        3228,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 63,
+      "names": [
+        "SPIRAL_GALAXIES"
+      ],
+      "banvasModule": 71399,
+      "sharedEnginePath": [
+        71399,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 64,
+      "names": [
+        "CUT_LINE"
+      ],
+      "banvasModule": 76366,
+      "sharedEnginePath": [
+        76366,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 65,
+      "names": [
+        "GUMBALL_BOTS_EXPRESSION"
+      ],
+      "banvasModule": 89716,
+      "sharedEnginePath": [
+        89716,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 66,
+      "names": [
+        "UNITS_DIGIT_TABLE"
+      ],
+      "banvasModule": 73020,
+      "sharedEnginePath": [
+        73020,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 67,
+      "names": [
+        "BLOCK_REMOVAL"
+      ],
+      "banvasModule": 31369,
+      "sharedEnginePath": [
+        31369,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 68,
+      "names": [
+        "DIGIT_LONG_MULTIPLICATION"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 69,
+      "names": [
+        "DIGIT_MULT_DRAG_AND_DROP"
+      ],
+      "banvasModule": 48356,
+      "sharedEnginePath": [
+        48356,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 70,
+      "names": [
+        "DOMINOES"
+      ],
+      "banvasModule": 24398,
+      "sharedEnginePath": [
+        24398,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 71,
+      "names": [
+        "SWITCHABLE"
+      ],
+      "banvasModule": 22422,
+      "sharedEnginePath": [
+        22422,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 72,
+      "names": [
+        "SYMMETRY_DEFENSE"
+      ],
+      "banvasModule": 6590,
+      "sharedEnginePath": [
+        6590,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 73,
+      "names": [
+        "LIKE_TERMS_CORRAL"
+      ],
+      "banvasModule": 91881,
+      "sharedEnginePath": [
+        91881,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 74,
+      "names": [
+        "GRID_LINK"
+      ],
+      "banvasModule": 35954,
+      "sharedEnginePath": [
+        35954,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 75,
+      "names": [
+        "MEDIAN_SPLIT"
+      ],
+      "banvasModule": 61970,
+      "sharedEnginePath": [
+        61970,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 76,
+      "names": [
+        "KANGAROOSTER_SELECT"
+      ],
+      "banvasModule": 43124,
+      "sharedEnginePath": [
+        43124,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 77,
+      "names": [
+        "CLASSIFYING_QUADRILATERALS"
+      ],
+      "banvasModule": 83988,
+      "sharedEnginePath": [
+        83988,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 78,
+      "names": [
+        "ESTIMATION_DRILL"
+      ],
+      "banvasModule": 13216,
+      "sharedEnginePath": [
+        13216,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 79,
+      "names": [
+        "STAT_SQUARES"
+      ],
+      "banvasModule": 14862,
+      "sharedEnginePath": [
+        14862,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 80,
+      "names": [
+        "STAT_PARTITION"
+      ],
+      "banvasModule": 86797,
+      "sharedEnginePath": [
+        86797,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 81,
+      "names": [
+        "SINGLE_INPUT_LAYOUT"
+      ],
+      "banvasModule": 41496,
+      "sharedEnginePath": [
+        41496,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 82,
+      "names": [
+        "FRACTIONAL_RULER"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 84,
+      "names": [
+        "PROTRACTOR_TOOL"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 85,
+      "names": [
+        "FILLOMINO"
+      ],
+      "banvasModule": 35139,
+      "sharedEnginePath": [
+        35139,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 86,
+      "names": [
+        "DIGIT_DIFFERENCE_GRID"
+      ],
+      "banvasModule": 71446,
+      "sharedEnginePath": [
+        71446,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 87,
+      "names": [
+        "VARIABLE_LONG_MULTIPLICATION"
+      ],
+      "banvasModule": 26162,
+      "sharedEnginePath": [
+        26162,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 88,
+      "names": [
+        "NUMBER_BLOBS"
+      ],
+      "banvasModule": 25435,
+      "sharedEnginePath": [
+        25435,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 89,
+      "names": [
+        "SUMDOKU"
+      ],
+      "banvasModule": 39475,
+      "sharedEnginePath": [
+        39475,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 90,
+      "names": [
+        "PENTOMINO_SUDOKU"
+      ],
+      "banvasModule": 39475,
+      "sharedEnginePath": [
+        39475,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 91,
+      "names": [
+        "GCF_LCM_WEB"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 92,
+      "names": [
+        "TIMES_OUT"
+      ],
+      "banvasModule": 40354,
+      "sharedEnginePath": [
+        40354,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 93,
+      "names": [
+        "AKARI"
+      ],
+      "banvasModule": 65646,
+      "sharedEnginePath": [
+        65646,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 94,
+      "names": [
+        "MINESWEEPER"
+      ],
+      "banvasModule": 1999,
+      "sharedEnginePath": [
+        1999,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 95,
+      "names": [
+        "TENTS"
+      ],
+      "banvasModule": 1999,
+      "sharedEnginePath": [
+        1999,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 96,
+      "names": [
+        "SUM_SQUARES"
+      ],
+      "banvasModule": 25871,
+      "sharedEnginePath": [
+        25871,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 97,
+      "names": [
+        "RATIO_TILES"
+      ],
+      "banvasModule": 25871,
+      "sharedEnginePath": [
+        25871,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 98,
+      "names": [
+        "RECTIVIDE"
+      ],
+      "banvasModule": 28822,
+      "sharedEnginePath": [
+        28822,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 99,
+      "names": [
+        "MISSING_DECIMAL"
+      ],
+      "banvasModule": 94589,
+      "sharedEnginePath": [
+        94589,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 100,
+      "names": [
+        "PERCENT_SQUARE"
+      ],
+      "banvasModule": 24814,
+      "sharedEnginePath": [
+        24814,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 101,
+      "names": [
+        "FRACTION_FILL"
+      ],
+      "banvasModule": 1999,
+      "sharedEnginePath": [
+        1999,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 102,
+      "names": [
+        "SEQUENCE_PATH_GRID"
+      ],
+      "banvasModule": 24680,
+      "sharedEnginePath": [
+        24680,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 103,
+      "names": [
+        "CROSSOUT_SUMS"
+      ],
+      "banvasModule": 46078,
+      "sharedEnginePath": [
+        46078,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 104,
+      "names": [
+        "LASER_MAZE"
+      ],
+      "banvasModule": 19028,
+      "sharedEnginePath": [
+        19028,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 105,
+      "names": [
+        "FRAC_TURN"
+      ],
+      "banvasModule": 92477,
+      "sharedEnginePath": [
+        92477,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 106,
+      "names": [
+        "NANSUKE"
+      ],
+      "banvasModule": 20961,
+      "sharedEnginePath": [
+        20961,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 107,
+      "names": [
+        "TWINS_TRIPLETS"
+      ],
+      "banvasModule": 84682,
+      "sharedEnginePath": [
+        84682,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 108,
+      "names": [
+        "LOGIC_PUZZLE"
+      ],
+      "banvasModule": 13254,
+      "sharedEnginePath": [
+        13254,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 109,
+      "names": [
+        "INTERACTIVE_VENN_DIAGRAM"
+      ],
+      "banvasModule": 94372,
+      "sharedEnginePath": [
+        94372,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 110,
+      "names": [
+        "DIAGRAM_INTERACTIVE_VENN_DIAGRAM"
+      ],
+      "banvasModule": 94372,
+      "sharedEnginePath": [
+        94372,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 111,
+      "names": [
+        "SIEVE_TABLE"
+      ],
+      "banvasModule": 1999,
+      "sharedEnginePath": [
+        1999,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 112,
+      "names": [
+        "OVERBAR"
+      ],
+      "banvasModule": 54379,
+      "sharedEnginePath": [
+        54379,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 113,
+      "names": [
+        "INTEGER_TAC_TOE"
+      ],
+      "banvasModule": 27770,
+      "sharedEnginePath": [
+        27770,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 114,
+      "names": [
+        "SQUARE_ROOT_SWITCHABLE"
+      ],
+      "banvasModule": 22422,
+      "sharedEnginePath": [
+        22422,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 115,
+      "names": [
+        "HIVE_PUZZLE"
+      ],
+      "banvasModule": 90932,
+      "sharedEnginePath": [
+        90932,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 116,
+      "names": [
+        "SQUARES_TABLE"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 117,
+      "names": [
+        "DICE_TABLE"
+      ],
+      "banvasModule": 49337,
+      "sharedEnginePath": [
+        49337,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 118,
+      "names": [
+        "SCIENTIFIC_NOTATION"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 119,
+      "names": [
+        "PRODUCT_SQUARES"
+      ],
+      "banvasModule": 34608,
+      "sharedEnginePath": [
+        34608,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 120,
+      "names": [
+        "CROSSED_WIRES"
+      ],
+      "banvasModule": 86799,
+      "sharedEnginePath": [
+        86799,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 121,
+      "names": [
+        "CROSSOUT_AVERAGES"
+      ],
+      "banvasModule": 1999,
+      "sharedEnginePath": [
+        1999,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 122,
+      "names": [
+        "PYTHAGOREAN_PATHS"
+      ],
+      "banvasModule": 12474,
+      "sharedEnginePath": [
+        12474,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 125,
+      "names": [
+        "EGYPTIAN_FRACTIONS"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 126,
+      "names": [
+        "REARRANGEABLE_VERTICAL"
+      ],
+      "banvasModule": 20009,
+      "sharedEnginePath": [
+        20009,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 127,
+      "names": [
+        "SUBTRACTILES"
+      ],
+      "banvasModule": 43091,
+      "sharedEnginePath": [
+        43091,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 128,
+      "names": [
+        "MISMO_DRAG_AND_DROP"
+      ],
+      "banvasModule": 94131,
+      "sharedEnginePath": [
+        94131,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 130,
+      "names": [
+        "CROSSTILES"
+      ],
+      "banvasModule": 80103,
+      "sharedEnginePath": [
+        80103,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 131,
+      "names": [
+        "SYM_SUMS"
+      ],
+      "banvasModule": 7647,
+      "sharedEnginePath": [
+        7647,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 132,
+      "names": [
+        "MEASURING_DRAGGABLES"
+      ],
+      "banvasModule": 5611,
+      "sharedEnginePath": [
+        5611,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 133,
+      "names": [
+        "REARRANGEABLE_HORIZONTAL"
+      ],
+      "banvasModule": 86797,
+      "sharedEnginePath": [
+        86797,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 134,
+      "names": [
+        "HIDATO_PUZZLE"
+      ],
+      "banvasModule": 45623,
+      "sharedEnginePath": [
+        45623,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 135,
+      "names": [
+        "EIGHTS_AND_NINES"
+      ],
+      "banvasModule": 67276,
+      "sharedEnginePath": [
+        67276,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 136,
+      "names": [
+        "KNIGHT_PATHS"
+      ],
+      "banvasModule": 95891,
+      "sharedEnginePath": [
+        95891,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 137,
+      "names": [
+        "EQUATION_PATH"
+      ],
+      "banvasModule": 40679,
+      "sharedEnginePath": [
+        40679,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 138,
+      "names": [
+        "DOT_TRACE"
+      ],
+      "banvasModule": 92238,
+      "sharedEnginePath": [
+        92238,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 139,
+      "names": [
+        "DRAGON_DROP_IMPOSSIBLE"
+      ],
+      "banvasModule": 87149,
+      "sharedEnginePath": [
+        87149,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 140,
+      "names": [
+        "CHECKERBOARD_PATH"
+      ],
+      "banvasModule": 4596,
+      "sharedEnginePath": [
+        4596,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 141,
+      "names": [
+        "DIGIT_CROSS_OUT"
+      ],
+      "banvasModule": 85712,
+      "sharedEnginePath": [
+        85712,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 142,
+      "names": [
+        "CRYPTARITHMS"
+      ],
+      "banvasModule": 71776,
+      "sharedEnginePath": [
+        71776,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 144,
+      "names": [
+        "CROSS_SUMS"
+      ],
+      "banvasModule": 90000,
+      "sharedEnginePath": [
+        90000,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 145,
+      "names": [
+        "NUMBER_CROSS"
+      ],
+      "banvasModule": 20961,
+      "sharedEnginePath": [
+        20961,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 146,
+      "names": [
+        "MULTIPLE_CHOICE_ELIMINATION"
+      ],
+      "banvasModule": 53028,
+      "sharedEnginePath": [
+        53028,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 147,
+      "names": [
+        "COLOROMINOES"
+      ],
+      "banvasModule": 25487,
+      "sharedEnginePath": [
+        25487,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 148,
+      "names": [
+        "CHECKERBOARD_PATH_MULTIPLE"
+      ],
+      "banvasModule": 56552,
+      "sharedEnginePath": [
+        56552,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 149,
+      "names": [
+        "TAXI_PATHS"
+      ],
+      "banvasModule": 93140,
+      "sharedEnginePath": [
+        93140,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 150,
+      "names": [
+        "ICE_BLOCKS"
+      ],
+      "banvasModule": 75517,
+      "sharedEnginePath": [
+        75517,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 151,
+      "names": [
+        "MULTIPLE_INPUT_INTERACTIVE"
+      ],
+      "banvasModule": 83322,
+      "sharedEnginePath": [
+        83322,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 152,
+      "names": [
+        "SUDOKU"
+      ],
+      "banvasModule": 39475,
+      "sharedEnginePath": [
+        39475,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 153,
+      "names": [
+        "COIN_FLIPS"
+      ],
+      "banvasModule": 71375,
+      "sharedEnginePath": [
+        71375,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 155,
+      "names": [
+        "HUNDREDS_CHART_FILL_IN"
+      ],
+      "banvasModule": 21673,
+      "sharedEnginePath": [
+        21673,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 156,
+      "names": [
+        "ORDERED_PATH"
+      ],
+      "banvasModule": 70058,
+      "sharedEnginePath": [
+        70058,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 157,
+      "names": [
+        "TENFRAME_DRAGGABLE"
+      ],
+      "banvasModule": 78763,
+      "sharedEnginePath": [
+        78763,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 158,
+      "names": [
+        "FLASHCARD_DRILL"
+      ],
+      "banvasModule": 7431,
+      "sharedEnginePath": [
+        7431,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 159,
+      "names": [
+        "MULTIPLE_CHOICE_INTERACTIVE"
+      ],
+      "banvasModule": 98465,
+      "sharedEnginePath": [
+        98465,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 160,
+      "names": [
+        "TENFRAME_TOGGLE"
+      ],
+      "banvasModule": 72022,
+      "sharedEnginePath": [
+        72022,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 161,
+      "names": [
+        "KEEPING_TRACK"
+      ],
+      "banvasModule": 47472,
+      "sharedEnginePath": [
+        47472,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 162,
+      "names": [
+        "ROPE_CLIMB_DRILL"
+      ],
+      "banvasModule": 94844,
+      "sharedEnginePath": [
+        94844,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 163,
+      "names": [
+        "LONGEST_STRING"
+      ],
+      "banvasModule": 95235,
+      "sharedEnginePath": [
+        95235,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 164,
+      "names": [
+        "FLASHCARD_MULTIPLE_CHOICE"
+      ],
+      "banvasModule": 28775,
+      "sharedEnginePath": [
+        28775,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 165,
+      "names": [
+        "DOTS_IN_RECTANGLES"
+      ],
+      "banvasModule": 8896,
+      "sharedEnginePath": [
+        8896,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 166,
+      "names": [
+        "SELECT_OVER_IMAGE"
+      ],
+      "banvasModule": 33039,
+      "sharedEnginePath": [
+        33039,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 167,
+      "names": [
+        "PICKY_MONSTERS"
+      ],
+      "banvasModule": 29635,
+      "sharedEnginePath": [
+        29635,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 168,
+      "names": [
+        "PICKY_MONSTERS_DIAGRAM"
+      ],
+      "banvasModule": 29635,
+      "sharedEnginePath": [
+        29635,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 169,
+      "names": [
+        "COUNTDOWN_MAZES"
+      ],
+      "banvasModule": 6783,
+      "sharedEnginePath": [
+        6783,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 170,
+      "names": [
+        "DIAGRAM_FLASHCARD_MULTIPLE_CHOICE"
+      ],
+      "banvasModule": 28775,
+      "sharedEnginePath": [
+        28775,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 171,
+      "names": [
+        "CITY_WALKS"
+      ],
+      "banvasModule": 26355,
+      "sharedEnginePath": [
+        26355,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 172,
+      "names": [
+        "SUM_GRIDS"
+      ],
+      "banvasModule": 49542,
+      "sharedEnginePath": [
+        49542,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 173,
+      "names": [
+        "NUMBER_LINE"
+      ],
+      "banvasModule": 36745,
+      "sharedEnginePath": [
+        36745,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 174,
+      "names": [
+        "FILL_DRILL_EQUATION"
+      ],
+      "banvasModule": 19574,
+      "sharedEnginePath": [
+        19574,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 175,
+      "names": [
+        "POINT_CONNECTION_LAYOUT"
+      ],
+      "banvasModule": 48640,
+      "sharedEnginePath": [
+        48640,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 176,
+      "names": [
+        "SUM_STRIPS"
+      ],
+      "banvasModule": 65968,
+      "sharedEnginePath": [
+        65968,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 177,
+      "names": [
+        "MATCH_COLUMNS"
+      ],
+      "banvasModule": 99962,
+      "sharedEnginePath": [
+        99962,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 178,
+      "names": [
+        "MATCH_COLUMNS_DIAGRAMS"
+      ],
+      "banvasModule": 99962,
+      "sharedEnginePath": [
+        99962,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 179,
+      "names": [
+        "MIRROR_ART"
+      ],
+      "banvasModule": 4584,
+      "sharedEnginePath": [
+        4584,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 180,
+      "names": [
+        "SYMMETRY_ACTIONS"
+      ],
+      "banvasModule": 81229,
+      "sharedEnginePath": [
+        81229,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 181,
+      "names": [
+        "DRAW_RECTANGLE_PRIME"
+      ],
+      "banvasModule": 95872,
+      "sharedEnginePath": [
+        95872,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 182,
+      "names": [
+        "SELECT_GRID"
+      ],
+      "banvasModule": 31790,
+      "sharedEnginePath": [
+        31790,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 183,
+      "names": [
+        "SLIDING_TILES"
+      ],
+      "banvasModule": 80025,
+      "sharedEnginePath": [
+        80025,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 184,
+      "names": [
+        "ROBOTS_ORTHO_BUTTONS"
+      ],
+      "banvasModule": 43254,
+      "sharedEnginePath": [
+        43254,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 185,
+      "names": [
+        "ROBOTS_ORTHO_INPUT"
+      ],
+      "banvasModule": 35755,
+      "sharedEnginePath": [
+        35755,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 186,
+      "names": [
+        "ROBOTS_TURN_BUTTONS"
+      ],
+      "banvasModule": 43254,
+      "sharedEnginePath": [
+        43254,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 187,
+      "names": [
+        "ROBOTS_TURN_INPUT"
+      ],
+      "banvasModule": 35755,
+      "sharedEnginePath": [
+        35755,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 188,
+      "names": [
+        "ELEVATOR_RIDES"
+      ],
+      "banvasModule": 76161,
+      "sharedEnginePath": [
+        76161,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 189,
+      "names": [
+        "COUNTING_SQUARES"
+      ],
+      "banvasModule": 74155,
+      "sharedEnginePath": [
+        74155,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 190,
+      "names": [
+        "FLYCATCHER"
+      ],
+      "banvasModule": 64541,
+      "sharedEnginePath": [
+        64541,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 191,
+      "names": [
+        "PAIR_HONEYCOMBS"
+      ],
+      "banvasModule": 46233,
+      "sharedEnginePath": [
+        46233,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 192,
+      "names": [
+        "GREATER_THAN_SUDOKU"
+      ],
+      "banvasModule": 43896,
+      "sharedEnginePath": [
+        43896,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 193,
+      "names": [
+        "DECIMAL_NUMBER_CROSS"
+      ],
+      "banvasModule": 57940,
+      "sharedEnginePath": [
+        57940,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 195,
+      "names": [
+        "HUNDREDS_CHART_SECTION"
+      ],
+      "banvasModule": 69920,
+      "sharedEnginePath": [
+        69920,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 196,
+      "names": [
+        "NUMBER_BLOBS_FRACTION"
+      ],
+      "banvasModule": 25833,
+      "sharedEnginePath": [
+        25833,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 197,
+      "names": [
+        "PROJECT_AND_PLAY"
+      ],
+      "banvasModule": 21794,
+      "sharedEnginePath": [
+        21794,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 198,
+      "names": [
+        "SUBTRACT_AND_TRACK"
+      ],
+      "banvasModule": 86430,
+      "sharedEnginePath": [
+        86430,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 199,
+      "names": [
+        "COUNTING_ON"
+      ],
+      "banvasModule": 72858,
+      "sharedEnginePath": [
+        72858,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 200,
+      "names": [
+        "COMPARING_GROUPS"
+      ],
+      "banvasModule": 19088,
+      "sharedEnginePath": [
+        19088,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 201,
+      "names": [
+        "LONGEST_LINKING_CUBES"
+      ],
+      "banvasModule": 49004,
+      "sharedEnginePath": [
+        49004,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 202,
+      "names": [
+        "COMPARING_WITH_HINTS"
+      ],
+      "banvasModule": 88672,
+      "sharedEnginePath": [
+        88672,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 203,
+      "names": [
+        "HIDATO_WITH_PATH_DRAWING"
+      ],
+      "banvasModule": 36052,
+      "sharedEnginePath": [
+        36052,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 204,
+      "names": [
+        "COMPOSING_SHAPES"
+      ],
+      "banvasModule": 61541,
+      "sharedEnginePath": [
+        61541,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    },
+    {
+      "rendererId": 205,
+      "names": [
+        "LINE_PLOT"
+      ],
+      "banvasModule": 30483,
+      "sharedEnginePath": [
+        30483,
+        54145
+      ],
+      "coverage": "shared-engine contract only; real lesson not executed"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+Beast Academy Android 0.7.8 — release validation
+===============================================
+2026-10-19. Version code 15. Incremental compatibility release; the holistic
+touch-reliability plan and recurring Vanadium freeze remain unresolved.
+
+Behavior
+--------
+Registers a dedicated input module at document start on each main WebView.
+Initial navigation, reloads and replacement documents get fresh installations;
+same-document routing retains the installation. No page-finished timing loop.
+
+For qualified v12.119.0 Banvas variants 54145 and 55417, the module excludes
+previously observed ended contacts from the engine's event facade and associates
+an accepted single-piece gesture with its owning finger. Other fingers cannot
+move or finish it. Raw browser events and unrelated controls remain unchanged.
+Cancellation and lifecycle interruption clear shared engine tracking without
+synthesizing an ordinary release. This does not clear every tool's private state.
+
+Unknown/mixed deployments, changed engine signatures and replaced input helpers
+decline adaptation. Reused hosts recheck coordinate/listener dependencies.
+Original site handling remains available; this fallback loses the added
+protection and is not evidence that the new website version is touch-reliable.
+Provider registration failures are recorded without blocking site navigation.
+Private diagnostics record compatibility status and document identity.
+
+Validation
+----------
+- 16 JVM unit tests passed, zero failures/errors/skips.
+- Debug/release lint completed with warnings and no errors; both APK builds
+  and debug instrumentation compilation passed.
+- Chromium 156.0.8078.4: actual pinned core/vendor runtimes and both input engines,
+  with geometry/rendering/view substitutes. Original phantom-contact refusal
+  reproduced; patched modeled stale contacts, late terminal events, ID reuse,
+  replacement starts and 1,000 seeded owner/release sequences PER ENGINE passed.
+  Trusted CDP cases passed ordinary drag, secondary release, raw multitouch,
+  outside button, engine cancellation and reload. Changed signatures, helper/
+  instance replacements, unknown/mixed versions, repeated installation and both
+  bundle orders passed. Unknown-version fallback completed an ordinary drag.
+  These are not full authenticated lesson tests or native provider-fault replays.
+- Isolated read-only Android 35 emulator, Google WebView 147.0.7727.138, inputlab
+  package only: 13 native lifecycle tests and one browser-session test passed.
+  Diagnostic export initially injected before the new document rendered/focused;
+  test-only visual/focus readiness fixed that failure. Final exact-source export
+  and installer tests passed (2 tests / 10.048 seconds). Installer test verifies
+  early execution, 100 reloads, fresh document state, same-document navigation,
+  unsupported origin and return. No main-package instrumentation or tablet input.
+- Packaged compatibility asset is byte-identical to the repository file.
+  Vendor bundles are absent from the APK. JavaScript syntax and git whitespace
+  checks passed. Source bundles remain in a private archive outside git.
+- Main APK package/version and signing certificate verified. The native Mac build
+  used another debug key; the published artifact was re-signed with the existing
+  release debug key, then verified. This retains previous releases' update identity.
+
+Commands
+--------
+  ./gradlew :app:testDebugUnitTest :app:lintDebug :app:lintRelease \
+    :app:assembleDebug :app:assembleRelease :app:compileDebugAndroidTestKotlin
+  ./gradlew -PinputLab=true :app:assembleDebug :app:assembleDebugAndroidTest
+  node scripts/fetch-input-test-bundles.mjs PRIVATE_SOURCE_DIRECTORY
+  PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs CHROMIUM_PATH=/path/to/chrome \
+    node scripts/test-retired-touch-guard.mjs PRIVATE_SOURCE_DIRECTORY
+
+Native tests used an explicit isolated emulator serial and a separate ADB server.
+No physical tablet install, restart, navigation, unlock or test gesture occurred.
+The user confirmed there is no separate authenticated session for live lessons.
+The optional engineer email is docs/beast-academy-engineer-email.txt; nothing sent.
+
+Artifact
+--------
+Name: beastacademy-android-v0.7.8.apk
+Package: com.example.beast_academy_apk
+Packaging: debug APK, matching prior GitHub releases; version 0.7.8 / code 15.
+Size: 30,581,365 bytes
+SHA-256: abaacaabee0bd46fe2df44a4d4bc09655ac9f635c3a122bbed551ba224dde5c8
+Signer certificate SHA-256:
+  b504420c7aca6e24580d6e72653f3d6b6b82d4bdfeb623f0edfb2ef80e68f65b
+Matches v0.7.7 and v0.7.6. Tag v0.7.8 identifies the corresponding source commit.
+Durable private checks, APK and publication verification:
+  /home/jt/.local/state/beastacademy/releases/v0.7.8/
+
+Open gates and next work
+------------------------
+1. Per-tool noncommitting cancellation, saved-state/undo preservation and next
+   gesture behavior remain unfinished. The fixture deliberately demonstrates
+   that a view can remain "moving" after shared engine cleanup. Do not replace
+   this work with ordinary release callbacks or whole-lesson state restoration.
+2. Drawing/slider corrections, broader custom-control behavior, runtime engine
+   selection, real multifinger tools and full asset acquisition/index automation
+   remain incomplete. The 194-entry registry map is dependency coverage only.
+3. Compatibility limitations are captured privately; a user-visible status path
+   remains outstanding. Safe nonactivation does not satisfy the reliability goal.
+4. The actual Vanadium 155 trigger has not been reproduced/prevented on a matching
+   provider. Real lesson answers, clicks/scrolling, interruptions and subsequent
+   play require an authorized isolated lesson session and affected-provider checks.
+5. Physical deployment and everyday user validation have not occurred. Preserve
+   the existing lesson and capture evidence before any later authorized update.
+
+Do not mark the plan complete or close issue #1 based on this release.

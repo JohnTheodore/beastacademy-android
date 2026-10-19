@@ -1,0 +1,172 @@
+Subject: Reproducible touch ownership/cancellation bugs in both Banvas engines (v12.119.0)
+
+Hi Beast Academy engineering team,
+
+We've been investigating lessons becoming unresponsive to dragging in an Android
+WebView wrapper. We found reproducible frontend input bugs in your deployed
+v12.119.0 JavaScript, independent of a separate browser contact-tracking problem.
+The shared input engine appears to be the right place to fix these across lessons.
+
+We inspected downloaded first-party bundles and tested their original functions,
+then confirmed two cases with trusted touch events in desktop Chromium
+156.0.8078.4. These tests use controlled geometry and a generic draggable view;
+they are not full authenticated lesson walkthroughs. We have not inspected your
+private source repository. Numeric module IDs below identify this deployment only.
+
+Files and handlers
+------------------
+Main lesson engine:
+  https://beastacademy.com/dist/v12.119.0/bundle_core.js
+  Module 54145: Banvas listenToInputEvents, onMouseEvent, getXYFromEvent.
+  Module 32075: BanvasMouse onTouchStart, onTouchMove, onGlobalTouchMove,
+                onGlobalTouchEnd/onGlobalMouseUp, resetMouseDownView.
+  Module 98680: getEventPos coordinate helper.
+
+Second bundled engine:
+  https://beastacademy.com/dist/v12.119.0/bundle_vendor.js
+  Outer module 55417 contains these named nested source modules:
+    ./frontend/banvas/Banvas.ts
+    ./frontend/banvas/util/BanvasMouse.ts
+  The exported BanvasElement refers to this Banvas implementation. Its event
+  registration and ownership problems are similar, but coordinate selection
+  differs as described below.
+
+Our source dependency trace found 194 registered renderers leading to the main
+Banvas engine. That demonstrates shared infrastructure, not that every renderer
+has been exercised or exhibits the same visible failure. The second engine's
+runtime selection also needs to be checked against your feature flags.
+
+1. touchcancel leaves a drag active
+----------------------------------
+Both Banvas implementations register touchstart, touchmove and touchend but no
+touchcancel in their canvas/global input listener lists.
+
+Reproduction:
+  - Start finger A on a draggable view and move it.
+  - Deliver touchcancel for A.
+  - mouseDownView remains set and isDragging remains true.
+  - No cancellation cleanup occurs. In the controlled function harness, a later
+    move without a new start can continue dragging the old view.
+
+This is not proof of a permanent freeze: a new touchstart can overwrite some
+state. It is proof that interruption does not terminate the current interaction.
+
+Suggested change:
+  Add explicit cancellation handling in Banvas and BanvasMouse and propagate an
+  onTouchCancel/onMouseCancel-equivalent operation to the active tool/view.
+  Cancel the owner only if its identifier is included in changedTouches; losing
+  an unrelated secondary contact must not cancel the owner's drag. For teardown
+  or focus loss, explicitly cancel the active operation regardless of event data.
+
+  Clear ownership, movement/click-drag flags, hover timers, cursor and temporary
+  listeners idempotently. Also clear or restore tool-specific transient state.
+  Do not route cancellation through ordinary onGlobalMouseUp/onMouseRelease:
+  those handlers can click, drop a piece, or commit a move.
+
+For example, main module 53120 (toothpickGrid) retains mouseDown,
+mouseDownToothpick and mouseDownCoords. Its onMouseRelease calls
+mouseDownToothpick.toothpickMouseRelease and can call toothpickTap. Clearing only
+BanvasMouse.mouseDownView would leave view state behind; invoking ordinary
+release could perform an unintended action. Discrete drags need a noncommitting
+cancel path. Drawing/erasing should preserve already committed segments while
+ending the current stroke without adding a connector or another edit.
+
+2. Releasing a second finger releases the first finger's drag
+-----------------------------------------------------------
+Reproduction in both engines:
+  - Finger A starts and moves a piece.
+  - Finger B touches elsewhere while A stays down.
+  - Lift B, keeping A down.
+  - The global touchend path releases A's piece and clears mouseDownView.
+
+The trusted-browser test explicitly checked touchend changedTouches=[B] and
+touches=[A]. This is not an ambiguous test of which finger was released.
+
+Suggested change:
+  Store a gesture owner identifier when a single-contact operation begins.
+  Additional fingers must follow the tool's explicit policy and cannot overwrite
+  that owner. Only owner moves update that operation. Only an owner end completes
+  it; owner cancellation follows the separate cleanup path above.
+
+  Make this decision before dispatching to BanvasMouse, and account for both
+  canvas and document handlers. Do not clear ownership in the canvas touchend
+  handler before the global handler performs the actual completion, or complete
+  twice because the same event bubbles through both. Centralizing the terminal
+  transition once per event/operation would make this easier to reason about.
+
+3. Coordinates can come from the wrong finger
+-------------------------------------------
+Main module 98680's getEventPos prefers targetTouches[0] over changedTouches[0].
+When A is lifted while B remains on the canvas, the release coordinates can be
+B's coordinates rather than A's final position. Our controlled test reproduces it.
+
+The nested TypeScript engine uses changedTouches[0], but without owner tracking
+its global move path can move A's piece using B's changed coordinates. We also
+reproduced that behavior in the original-function harness.
+
+Suggested change:
+  Resolve the touch by the operation's owner ID. On owner end/cancel, use that
+  owner's entry in changedTouches, not a remaining touch. On move, act only when
+  the owner changed and use that entry. Do not substitute another touch if the
+  owner is absent. Array order must not determine ownership.
+
+In abstract form, after normalizing a DOM event once:
+  start:  if idle, select an eligible changed contact under the tool's policy
+  move:   if changedTouches contains owner, update using that owner's coordinates
+  end:    if changedTouches contains owner, complete once and clear owner
+  cancel: if changedTouches contains owner, cancel without completion; clear owner
+
+This is an algorithm sketch, not a drop-in patch for your dispatch architecture.
+The per-tool cancellation audit is the part that is not simply a one-line fix.
+
+4. Other shared controls have matching termination gaps
+-------------------------------------------------------
+Drawing overlay:
+  https://beastacademy.com/dist/v12.119.0/bundle_478.js
+  Module 10721, DrawvasView: no touchcancel listener; the original-function test
+  leaves mouseDown/stroke tracking active after cancellation. Add a distinct
+  stroke-ending cancellation path and prevent a connector into the next stroke.
+
+Slider:
+  bundle_core.js, module 982, RangerSlider: starts document touchmove tracking
+  but relies on document mouseup for termination; no matching touchend/touchcancel.
+  Add owner-aware touch termination and remove temporary tracking on end/cancel
+  and unmount. A compatibility mouseup can mask this in a real browser, so we
+  have established the handler-level gap, not a visible full-page slider failure.
+
+Separate browser fault and frontend resilience
+---------------------------------------------
+In an actual freeze on Vanadium 155.0.8059.84.0, Android delivered every native
+release, but trusted DOM touchend lists resurrected previously released contacts.
+JavaScript remained responsive. We have not reproduced the exact provider trigger
+in a full Android browser. This is separate from the missing cancellation bugs;
+there was no native cancellation in that captured failing gesture.
+
+Both Banvas versions reject canvas handling when touches.length > 1. Thus one
+real new contact plus stale browser contacts prevents a fresh drag. A narrowly
+scoped local adapter excluding two contacts already proven stale restored dragging
+in that session without changing the raw browser events or reloading the lesson.
+
+An owner-based engine should avoid using the total global touch count as its sole
+single-piece eligibility check. That improves isolation, but must preserve tools
+that intentionally use multiple fingers; do not globally reduce events to one
+finger or assume every unexpected contact is phantom. Fixing the frontend does
+not itself repair the browser's underlying bookkeeping.
+
+Regression cases to add
+-----------------------
+  - Normal drag and tap, including drag outside the canvas then release.
+  - A down/move, B down/up: A remains held and movable.
+  - A down/move, B down, A up: complete at A's coordinates exactly once.
+  - B-only movement does not move A's piece.
+  - Owner cancel: no answer submission or new move; next drag works.
+  - Secondary cancel: owner remains active.
+  - Repeated cancel/end, identifier reuse, view removal, focus changes and reuse.
+  - Drawing cancellation retains committed segments without joining strokes.
+  - Slider end/cancel cleans up without waiting for compatibility mouseup.
+  - Mouse, keyboard, scrolling, ordinary clicks and genuine multifinger tools.
+
+We can provide minimal reproductions and sanitized traces if useful. We are not
+including account data, private lesson state or copied bundle attachments here.
+
+Thanks!

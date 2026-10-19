@@ -1,0 +1,60 @@
+Adversarial review of touch-reliability-plan.txt
+===============================================
+2026-10-19. Reviewed against the incident ledger, frontend audit, native dispatch,
+controller pause flow and existing ownership fixture. Changes below amend the
+plan; they are not implemented production fixes or new provider evidence.
+
+P1: The proposed critical path depended on unavailable vendor cooperation.
+  Original Phase C required vendor-owned fixes or a supplied API/marker, and
+  otherwise declared an external blocker. That could produce extensive tooling
+  without a deployable correction to the child's frozen lesson.
+  Amendment: section 2a and Phase C now require local feasibility first: native
+  corrections, scoped surface ownership, provider qualification and a maintained
+  local compatibility boundary. No vendor contact or response is required. Private
+  engine access is not presumed safe simply because it can restore one session.
+  If local candidates fail, record a concrete architecture decision rather than
+  pretending a vendor dependency or a reload fulfills the goal.
+
+P1: Safety checks did not explicitly prove continued play after the captured fault.
+  The test matrix emphasized cancel/owner correctness but did not require a new
+  genuine gesture to succeed while stale browser contacts remained. Clearing
+  native state or avoiding a wrong answer could pass while the board stayed inert.
+  Amendment: section 2a, Phase E and completion criteria require fresh gestures
+  with stale contacts, late events and reused identifiers, with piece/answer
+  assertions. Separate provider prevention from frontend resilience. Synthetic
+  tolerance does not establish prevention of the natural provider failure.
+
+P1: Lifecycle delivery and frontend cleanup were treated as one obligation.
+  BeastAcademyWebView dispatches native cancellation; controller pauseAudio then
+  waits for audio cleanup or a timeout before onPause. Neither proves the lesson
+  tool acknowledged cancellation. The plan's synchronous native requirement alone
+  left resume/new-gesture ordering unspecified.
+  Amendment: Phase B requires queued cancellation, delayed JS, rapid resume and
+  stale acknowledgment tests; any readiness protocol needs document/surface/
+  gesture generations and bounded failure behavior. Phase C must demonstrate a
+  real cleanup path. Do not ship a gate that creates another permanent input lock.
+  This is a design gap, not evidence that lifecycle caused the October 19 incident.
+
+P2: Unsupported website versions silently restored known-buggy behavior.
+  The original plan said to leave vendor behavior intact when version detection
+  failed, without treating this as withdrawal of the reliability guarantee.
+  A website or late chunk update can happen independently of the APK rollout.
+  Amendment: Phase C adds mixed-version/SPA/host replacement cases, explicit
+  degraded status, requalification and idle-boundary policy changes. Safe
+  nonactivation is not a working fix, and disable/rollback cannot be counted as one.
+
+P2: Blanket zero-commit cancellation could undo legitimate incremental edits.
+  A drag/drop transaction and a drawing/erasing tool need different persistence
+  contracts. Requiring cancellation to erase all evidence of a gesture could
+  remove segments already committed by the tool or restore a stale lesson state.
+  Amendment: per-tool cancellation preserves committed work and performs no new
+  terminal operation. Tests must inspect saved state, undo history and the next
+  gesture, not merely mouseDownView/isDragging flags.
+
+Validation of this review
+-------------------------
+Checked the revised dependency path and requirements for contradictions; checked
+documentation whitespace. No production code changed, no device touched, no
+deployment, no vendor contact and no claim that recurring frozen input is fixed.
+Implementation begins with the decisive local feasibility work, not a new broad
+refactor or another narrowly passing test presented as a permanent correction.

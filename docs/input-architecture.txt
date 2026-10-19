@@ -188,3 +188,17 @@ the candidate against normal controls, login, audio, file picker, full-screen,
 and background/cover behavior. Do not run lock/screen-off experiments or replace
 the child's APK merely to get a passing test. A build or emulator pass alone is
 not evidence that the provider's natural failure has been fixed.
+
+0.7.8 compatibility boundary
+---------------------------
+LessonInputCompatibility registers main/assets/lesson-input-compat.js before the
+first navigation of every main WebView. DOCUMENT_START_SCRIPT reexecutes on each
+new document, including reloads, independently of page-finished callbacks. The
+adapter qualifies the deployed core/vendor URLs, engine methods and mouse helper
+methods before altering only the two shared Banvas input paths. It preserves raw
+browser events, tracks owner IDs, tolerates observed retired contacts, and clears
+engine tracking without normal completion on interruption. Website incompatibility
+falls back to original behavior and is recorded in private diagnostics. It does
+not implement a generic rollback of per-view state. See retired-touch-guard.txt
+and releases/v0.7.8.txt for tests and remaining gates. No physical deployment or
+proof of prevention of the original Vanadium failure is implied.

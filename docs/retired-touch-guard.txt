@@ -1,0 +1,109 @@
+Lesson input compatibility — 0.7.8 implementation and limits
+==========================================================
+2026-10-19. This document supersedes the earlier debug-only retired-contact
+prototype. Full-plan completion and permanent prevention remain unproved.
+
+Installation and reloads
+------------------------
+app/src/main/assets/lesson-input-compat.js implements the patch.
+LessonInputCompatibility.kt registers it through DOCUMENT_START_SCRIPT when each
+main WebView is created, before navigation. WebView runs that registration for
+EVERY matching new document: initial load, reload, navigation and replacement
+WebView. Same-document routing keeps the existing installation. Late installation
+is refused rather than retroactively guessing which contacts were active.
+
+Scope is the top-level https://beastacademy.com document and the qualified
+v12.119.0 Banvas implementations, main module 54145 and nested engine exported by
+module 55417 as BanvasElement. Popups redirect supported navigation into the main
+WebView. Unsupported providers/origins/frames do not get speculative late patches.
+The early touch-action/scroll-claiming experiment remains debug-only.
+
+What changes
+------------
+A passive capture observer records trusted start/end/cancel transitions. Only an
+ID whose start and terminal event were observed is eligible for retirement on a
+later event. The terminal event itself still delivers its changed contact. A new
+start rehabilitates a reused ID. Unknown contacts are never presumed phantom.
+
+A Webpack runtime callback wraps just the two module factories, without eager
+execution, then their exported onMouseEvent methods. Both bundle orders are
+tested. This is a maintained private integration, not a vendor-supported API.
+
+Each accepted single-piece gesture owns one ID. A second finger cannot move or
+release it. Owner end uses the owner's changed coordinates even when another
+finger remains. Ambiguous initial presses keep the vendor's rejection policy.
+Only the engine's event facade is normalized; real multitouch/raw browser events
+remain available to other controls, the browser and diagnostics. Mouse and other
+non-touch events use the original handler.
+
+Cancellation, page hiding, blur and canvas removal abandon engine ownership and
+clear BanvasMouse's held view, dragging/click-drag flags and hover timer without
+calling normal release or submitting an answer. An ownerless touch tail cannot
+continue the abandoned drag. A fresh start for the same ID can replace a gesture
+whose terminal event was missing, without completing the old operation.
+
+THIS IS NOT COMPLETE TOOL CANCELLATION. Individual views can retain their own
+moving/selected/stroke state. We do not guess rollback, synthesize release or
+restore whole-lesson snapshots. The test explicitly demonstrates retained tool
+state even after engine bookkeeping is clear. Drawing/slider-specific patches
+and the broader tool-state audit remain unfinished.
+
+Handling website updates
+------------------------
+Known core/vendor script URLs and exact compatibility fingerprints of three
+engine methods plus six BanvasMouse helpers are required. Helper identity checks
+catch changed per-instance functions before adapting subsequent input. Coordinate
+and listener method references are also rechecked on reused engine instances.
+Registration failures are recorded without preventing native site navigation. Unknown
+or mixed versions and changed signatures fall back to original site handling.
+A missing/replaced Webpack integration must not prevent site initialization.
+These checks are compatibility checks, not cryptographic authentication.
+
+Fallback preserves site operation; it withdraws this patch's reliability claim.
+It does not fix a new website version automatically. Requalify against pinned
+source and publish updated signatures only after tests pass. Tests pin complete
+bundle SHA-256s; no vendor bundles are committed or shipped in the APK.
+
+Status/version/document and failure reasons appear in private input-compat trace
+records and window.__beastInputCompatStatus. Capture tools export that status
+without changing it. Raw contacts remain unchanged. There is no privileged new
+Android bridge, automatic upload, reload or renderer destruction.
+
+History is bounded to 64 tracked live IDs and 256 retired IDs. Eviction reduces
+protection rather than guessing. Missing terminal events, missed starts or
+incorrect terminal changedTouches can limit the model. Undo refuses known active
+touches and restores only hooks still owned by this patch. Reload creates a
+fresh enabled installation after a session-local undo.
+
+Repeatable validation
+---------------------
+Obtain the two pinned public sources in a private directory outside git:
+  node scripts/fetch-input-test-bundles.mjs PRIVATE_AUDIT_DIRECTORY
+Then run (Playwright/Chromium installed separately):
+  PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs \
+  CHROMIUM_PATH=/path/to/chrome \
+    node scripts/test-retired-touch-guard.mjs PRIVATE_AUDIT_DIRECTORY
+
+Browser: Chromium 156.0.8078.4. The fixture loads full original core/vendor bundles
+and their real runtime, Banvas handlers and BanvasMouse. It substitutes view
+behavior, geometry and rendering. Full application startup intentionally stops
+at the specifically asserted absent getDistURL bootstrap. Every browser request
+is served locally. This is not an authenticated real-lesson walkthrough.
+
+Both original engines reproduce phantom-contact refusal. The patched paths pass
+modeled stale contacts, late old ends, ID reuse and replacement starts. Corrupt
+lists are MODELED inputs to actual handlers, not browser-generated reproductions.
+Each engine passes 1,000 seeded owner/release-order sequences. Separate trusted
+CDP checks cover normal drag, two-contact visibility, secondary release, outside
+button, noncommitting engine cancel and reload. Unknown/mixed deployments and
+changed engine/helper signatures decline safely; unpatched trusted drag works.
+
+Android: isolated read-only emulator, Google WebView 147.0.7727.138, .inputlab only.
+LessonInputCompatibilityInstrumentedTest exercises the production installer before
+page scripts, 100 reloads, same-document navigation, another origin and return.
+Existing native/session regressions pass. A diagnostic-export fixture initially
+injected before the new document's rendered surface/focus was ready; explicit
+visual/focus readiness fixes that test. Export and reload tests then pass.
+
+See releases/v0.7.8.txt for final build/release checks and unresolved plan gates.
+No physical tablet change, vendor contact or new real-use validation is claimed.

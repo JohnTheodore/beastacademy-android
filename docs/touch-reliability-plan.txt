@@ -1,0 +1,542 @@
+Holistic touch reliability plan for the Beast Academy Android app
+================================================================
+Written 2026-10-19 against repository commit 38c0339, app 0.7.7 (14).
+Status: revised after adversarial review on 2026-10-19. Local investigation and
+reasonable repository changes are authorized; physical deployment and disruptive
+tablet testing still require explicit authorization. This document is not proof
+of an implemented fix. Vendor cooperation is unavailable and is not a dependency.
+Subsequent user direction explicitly permits a surgical, maintained load-time
+patch of private frontend handlers. The incremental 0.7.8 implementation and its
+remaining qualification gates are documented in retired-touch-guard.txt. This permission
+does not establish safety, authorize a physical deployment or close the incident.
+
+Outcome
+-------
+A child can drag, tap, draw, scroll and use lesson controls repeatedly, across
+lesson families and normal interruptions, without stranded fingers, unintended
+drops, pieces stuck in a moving state, duplicate actions or lost lesson work.
+
+Fix input ownership and completion contracts at their actual boundaries. Keep
+the Android shell, browser provider and remote frontend responsibilities clear.
+One handler working in one lesson, a successful restart, or a passing emulator
+test is insufficient. We cannot guarantee correction of remote frontend and
+provider internals solely by changing our Android wrapper.
+
+This plan excludes hardcoded phantom IDs, global TouchEvent/prototype rewriting,
+blanket single-finger filtering, periodic reloads and automatic renderer
+destruction as solutions to touch reliability. The existing live recovery adapter
+remains a diagnostic recovery tool, not the architecture. A maintained local
+compatibility layer is allowed, but must earn its scope through the feasibility
+and state-preservation gates below. Calling an injection an adapter does not
+make private-method replacement or guessed gesture completion safe.
+
+1. Evidence and current implementation
+--------------------------------------
+Read first:
+  AGENTS.md
+  docs/incidents/input-reliability-status.txt
+  docs/adb-input-runbook.txt
+  docs/input-architecture.txt
+  docs/frontend-touch-audit.txt
+
+Established mechanisms must stay separate:
+  A. Our native stream previously sent incomplete cancellation. Version 0.7.6
+     repaired the demonstrated mechanism. A later natural failure still occurred.
+  B. October 19: native releases reached WebView, but trusted DOM TouchLists
+     resurrected contacts. A matching Chromium routing defect is a source
+     hypothesis with a branch harness, not a reproduced full-provider trigger.
+  C. Vendor shared engines ignore touchcancel and do not track drag-owner IDs.
+     Local original-function tests and desktop browser tests establish distinct
+     frontend failures. They do not explain creation of the phantom contacts.
+  D. Other controls repeat incomplete gesture completion patterns. Drawing is
+     reproduced at the function level; slider reliance on compatibility mouseup
+     is reproduced there. Scroll, swipe, avatar and animation paths need further
+     behavioral validation before being called broken.
+
+The downloaded v12.119.0 registry has 194 renderer entries sharing Banvas. There
+is also a second bundled Banvas implementation. Test both infrastructures and
+separate controls, not just toothpicks or polyominoes. Source acquisition covered
+34 first-party JS assets and two stylesheets; it was not a full security or
+business-logic audit, nor an authenticated walkthrough of every lesson.
+
+Already present in the repository; preserve and extend rather than redo:
+  - MainActivity, BrowserChrome and controller keep a stable native WebView host.
+  - BeastAcademyWebView tracks contacts, expands incomplete CANCEL, ends an old
+    stream before a fresh DOWN and consumes physical tails after cancellation.
+  - SessionVisibility, PauseCompletion and controller generation checks coordinate
+    lifecycle and stale asynchronous callbacks.
+  - A hung renderer waits for the user's decision; actual exits have bounded
+    recovery. Audio/TTS pause and provider muting remain separate responsibilities.
+  - Bounded native/DOM traces, incident snapshots, release export and temporary
+    shell-authorized inspection exist. Debug inputlab and replay tests exist.
+  - puzzle-touch-policy.js is an unshipped ownership experiment on explicitly
+    marked surfaces. live-touch-recovery.js is a session-local recovery adapter.
+
+The ledger last records 0.7.6 (13) on the physical tablet and 0.7.7 not installed
+there. Treat that as historical evidence; verify read-only in a later authorized
+session. Planning does not authorize updating, restarting or manipulating it.
+
+2. Target architecture and nonnegotiable contracts
+-------------------------------------------------
+Boundary                         Owner / responsibility
+Physical event -> Android view   Our native host: complete, ordered streams.
+Android view -> trusted DOM      WebView provider: correct contact identity/order.
+DOM -> lesson interaction        Vendor shared engine: explicit gesture ownership.
+DOM -> nonlesson controls        Each shared control: matching end/cancel behavior.
+Lifecycle -> all active work     Our session coordinator plus frontend cleanup.
+Observations -> diagnosis        Passive tracing, with raw evidence preserved.
+
+Native contract:
+  - Preserve genuine IDs, coordinates, timestamps, pressure, history and multitouch.
+  - One complete terminal event per interrupted stream; no move/up tail creates
+    a new stream. A replacement DOWN closes the preceding native stream first.
+  - No host reparent/detach from ordinary chrome changes. No interception changes
+    may steal an already-owned gesture without complete cancellation.
+  - Process, WebView generation and document identities qualify every callback.
+    Stale diagnostics or lifecycle messages cannot affect a new document.
+
+Observable frontend contract, to be achieved by our qualified local solution:
+  - Idle -> Tracking(ownerId, surface, tool, initial state) on a legitimate start.
+  - Only that owner's moves update a single-piece drag or stroke. An additional
+    finger follows a declared tool policy; it cannot impersonate the owner.
+  - Only the owner's release completes a single-contact operation. Releasing an
+    unrelated contact neither drops nor commits it.
+  - Completion and cancellation are distinct, idempotent terminal transitions.
+    Cancellation clears ownership, hover timers, movement flags, cursor/capture
+    and temporary listeners, and restores or discards transient state.
+  - Cancellation must not submit an answer, spend a move, complete a drop or
+    connect separate strokes. Define cancellation per tool: discrete manipulation
+    discards its pending operation; incremental drawing/erasing may retain already
+    committed segments. Cleanup must not add an edit or roll back previously
+    committed work. Calling normal release is not a generic cancel operation.
+  - Unknown move/up contacts cannot create or resurrect interactions.
+  - Teardown, focus loss, page hiding and surface removal have defined cleanup.
+    A new gesture starts cleanly without discarding committed lesson progress.
+
+Any app-owned input component should use explicit ownership, matching end/cancel
+events and idempotent cleanup. Pointer Events/capture may help our own components;
+they do not migrate the remote engine or repair browser contact bookkeeping.
+For Touch Events, identity comes from identifiers, never array position alone.
+
+Safety and continued usability are separate acceptance requirements. After an
+interruption, the next genuine gesture must work in the same lesson/document
+without a reload, a hidden timeout that commits a move, or an indefinitely closed
+input gate. Test both the absence of wrong edits and the ability to keep playing.
+
+2a. First decision: demonstrate a local route, before broad implementation
+------------------------------------------------------------------------
+We will not contact Beast Academy or wait for changes to its source. A detailed
+email may be prepared for the user to send, but is optional and outside the
+implementation dependency graph. Do not submit reports to any vendor implicitly.
+
+First deliverable: a local feasibility table for each confirmed failure, with
+the responsible boundary, proposed intervention, original failing reproduction,
+candidate result, preserved lesson-state assertions and remaining limitations.
+Prioritize the captured phantom-contact freeze, both shared engines, and drawing
+cancellation. Map the wider registry in parallel with implementation work; the
+full 194-entry inventory must not delay testing a correction to a known failure.
+
+Evaluate in order:
+  1. Existing native guarantees and gaps demonstrated in inputlab.
+  2. Scoped standards-based surface ownership that prevents the provider path.
+  3. A supported provider version qualified on isolated Android hardware.
+  4. A locally maintained compatibility layer for remaining frontend defects,
+     subject to Phase C. No vendor-supplied marker, API or release is assumed.
+
+Provider prevention and frontend tolerance must have separate results: making
+the lesson usable despite bad contact lists does not repair the browser. Test
+fresh owner start/move/end with stale contacts present, late stale-contact moves,
+owner release while another real finger remains, and identifier reuse. Require
+actual piece/answer assertions and a successful next gesture, not just empty
+native contact tracking. Modeled phantom events remain synthetic evidence.
+
+Stop an experiment when its stated hypothesis is refuted or its necessary hook
+cannot be established; record that result before changing the experiment. If
+none of these local routes passes the gates, report the precise unsolved case
+and the architectural tradeoff needed. Do not silently substitute a reload,
+vendor dependency or unsafe commit and call it a holistic fix. A different
+browser host is a separate product decision, with login/progress/audio/controls
+qualification; it is not assumed to solve frontend cancellation defects.
+
+Gesture ownership policy:
+  - Declare touch-action before a gesture on an identified interactive surface.
+    Boards that own panning can use none; shared-scroll surfaces require their
+    intended axis policy. Leave surrounding page and ordinary controls alone.
+  - Evaluate CSS ownership first. Add a nonpassive early touchstart preventDefault
+    only if evidence requires it and tap/click/accessibility contracts still pass.
+    These are separate experiments because early prevention suppresses synthetic
+    mouse clicks that some vendor controls need.
+  - Do not assume every canvas is interactive. Progress artwork, text, overlays,
+    read-only solutions, drawing layers and nested tools need distinct roles.
+  - No custom DOM event can be made trusted by our app. Do not claim synthesized
+    events repair the provider, and do not deliver an interaction twice.
+
+3. Phase A: preserve a reproducible frontend and coverage map
+----------------------------------------------------------
+Deliverables:
+  - A repeatable asset acquisition/index script under scripts/, based on the
+    current private audit tools, with pinned deployment version and SHA-256s.
+  - A sanitized frontend manifest and renderer/control coverage matrix under
+    docs/. Keep vendor bundles, authentication and account data outside git.
+  - Reproducible contract fixtures using the actual downloaded input modules,
+    with explicit dependency/geometry stubs and original failing baselines.
+
+Work:
+  1. Finish a versioned manifest of entrypoints, async chunks, stylesheets and
+     nested engine modules. Record missing or authenticated-only resources.
+  2. Trace both host factories, their runtime feature flags and engine selection.
+     A registry dependency proves shared code, not that every renderer was played.
+  3. Inventory shared controls: Banvas variants, drawing overlay, slider, custom
+     scrolling, swipe, avatar rotate/resize, and trainer animation interactions.
+  4. Record each component's ownership, coordinate, cancel, click and teardown
+     contract. Identify and test our local integration boundary before proposing
+     production browser-side code. Prefer DOM structure and standards-based
+     event/CSS boundaries; record version fingerprints and negative matches.
+     Hashed CSS classes and minified names alone are not a durable contract.
+  5. Re-run the current source comparison and baselines from a clean private
+     directory. Document desktop/CDP contact-ending semantics and validate the
+     changed/remaining IDs so the harness cannot reverse which finger lifted.
+  6. If authenticated exploration is needed, use an authorized separate desktop
+     or test account/session. Do not borrow, reset or navigate the child's tablet
+     session merely to complete the inventory. Never put credentials in git.
+
+Exit gate: both engine implementations and all identified custom input systems
+are represented; every result says whether it is source-only, a controlled
+function reproduction, a desktop browser result, a native-provider result or
+user validation. Source archives and commands have durable private copies.
+
+4. Phase B: formalize our native/session guarantees
+-------------------------------------------------
+Primary existing files:
+  app/src/main/java/com/example/beast_academy_apk/BeastAcademyWebView.kt
+  app/src/main/java/com/example/beast_academy_apk/BeastAcademyWebViewController.kt
+  app/src/main/java/com/example/beast_academy_apk/MainActivity.kt
+  app/src/main/java/com/example/beast_academy_apk/BrowserChrome.kt
+  app/src/main/java/com/example/beast_academy_apk/SessionVisibility.kt
+  app/src/main/java/com/example/beast_academy_apk/PauseCompletion.kt
+
+Work:
+  1. Review current stream state against the contracts above before changing it.
+     Retain the complete-cancel repair and stable host. Extract a small explicit
+     stream-state helper only if it makes ownership/invariants clearer; do not
+     perform another wholesale Activity or browser rewrite without evidence.
+  2. Cover nonzero owner IDs, arbitrary release order, rapid ID reuse, duplicate
+     terminal events, fresh DOWN after incomplete termination, and physical tails.
+  3. Verify focus, cover, background, screen state, fullscreen and file-picker
+     paths close streams consistently. End-of-stream work must run once and must
+     not rely on an asynchronous JavaScript callback completing before suspension.
+     Native dispatch returning is not evidence that the renderer/tool cleaned up.
+     The existing pauseAudio callback and timeout establish audio pause sequencing,
+     not input readiness. Test cancellation queued just before pause, delayed or
+     absent JS completion, rapid resume and a fresh press before cleanup arrives.
+     Any local lifecycle integration must retain a pending cleanup epoch and
+     reconcile it before admitting a new tool operation on resume, without
+     replaying old gestures. Scope acknowledgments to WebView, document, surface
+     and gesture generations. An audio callback cannot acknowledge input cleanup.
+     A readiness gate must be bounded and explicitly report failure; leaving the
+     lesson permanently blocked fails the usability gate. Prove safe cleanup and
+     readiness in the local design before adding such a gate to production.
+  4. Check document replacement, same-document lesson routing, renderer recovery,
+     popups and late callbacks for generation isolation. A URL match alone cannot
+     identify a document. Page-finished is too late for a first-touch policy.
+  5. Keep audio muting and speech lifecycle behavior intact. Document existing
+     old-provider fallbacks that replace a browser rather than describing them
+     as preserved-session recovery. Screen-off behavior is tested in inputlab;
+     physical tablet lock/cover experiments still require explicit authorization.
+  6. Ensure input processing stays bounded on the UI thread: no synchronous JS
+     round trip, disk write, network call or full-tree scan per motion event.
+
+Exit gate: existing native/session regressions and new invariant tests pass in
+the separate inputlab; unchanged document identity is asserted for preservation
+cases. This gate establishes our wrapper's contract only.
+
+5. Phase C: a maintained local frontend compatibility boundary
+------------------------------------------------------------
+This phase must work with the currently served website, without vendor changes.
+Own a small, documented integration module in our repository, its qualification
+matrix and its update process. Prefer preventing bad routing with scoped CSS
+ownership to changing event delivery. Neither approach is automatically enough
+for all of the independently demonstrated frontend defects.
+
+Local surface discovery:
+  - Derive explicit roles from audited actual lesson DOM/host structure: single-
+    piece board, drawing, multifinger tool, scroll area and decorative canvas.
+    Test each selector against positive and negative real-page examples and both
+    engine hosts. Do not assume a vendor marker exists or mark every canvas.
+  - Qualify the relevant asset fingerprints, engine variant and surface structure
+    before enabling behavior. Install the observer/bootstrap at document start;
+    activate policy only after recognition and before the first affected gesture.
+    Test immediate first touch, late chunks, nested surfaces, SPA lesson changes
+    and cached host reuse. If recognition is too late, that route fails its gate.
+  - Prefer standards-based events and CSS. Keep vendor-specific knowledge in one
+    versioned adapter, outside Activity and unrelated WebViewScripts strings.
+    Record exactly which assumption each fingerprint/structure check establishes.
+
+Candidate interventions, each requiring its own baseline and regression:
+  1. CSS touch-action for positively identified interactive surfaces. Add early
+     prevention only when separately justified; preserve ordinary click behavior,
+     outside scrolling, zoom/accessibility and tools with genuine multitouch.
+  2. Surface-local owner tracking if standards-based ownership alone is insufficient.
+     Define start/move/end/cancel and secondary-contact policy for each tool. A
+     gesture that starts outside the surface must remain outside its authority.
+     Other controls must receive their own input unchanged.
+  3. Before changing event delivery, enumerate what the actual engine consumes:
+     touches, targetTouches, changedTouches, coordinates, bubbling, document-level
+     listeners and compatibility mouse events. Suppressing secondary touchend alone
+     is insufficient: owner release can still use another finger's coordinates.
+     Synthetic events cannot be trusted; any candidate using them must prove the
+     real engine accepts them and that original and adapted events never both
+     perform the operation. Keep raw diagnostics ahead of adaptation and label
+     adapted observations separately. Do not rewrite global event prototypes.
+  4. Prove a noncommitting cancellation path for each affected tool. Dispatching
+     touchcancel to a listener that ignores it cannot meet this requirement.
+     Synthetic touchend/mouseup, clearing only mouseDownView, or suppressing all
+     cancellation are not acceptable generic substitutes. Test per-view state,
+     saved answer state, undo history, counters and the next gesture together.
+     Drawing/erasing follow explicitly documented incremental-commit semantics.
+  5. If a candidate needs private engine access, document the exact dependency
+     and failure behavior before implementation. The current session-specific
+     onMouseEvent recovery replacement is not a qualified production design. A private
+     hook needs a separate reviewed design with version checks, complete tool
+     state semantics and cross-family evidence; do not expand it opportunistically.
+     If no safe local cancel path exists, mark this candidate failed. That result
+     is a local feasibility limit, not an instruction to wait for the vendor.
+
+Integration and lifecycle:
+  - Use a dedicated main/assets module with explicit installation and teardown,
+    controller integration and narrowly approved lesson origins/frames. No new
+    high-privilege Android bridge. Maintain independent raw native/DOM evidence.
+  - Cancel/cleanup the old tool on route change, surface removal, tool switch and
+    lifecycle interruption. Restore temporary listeners/styles once, without
+    rolling back another completed operation. Test resume reconciliation from
+    Phase B, including late acknowledgments after document/surface replacement.
+  - Choose one delivery path per gesture. Enable/disable policy at an idle
+    boundary; do not switch an active gesture halfway to another event model.
+    Removed surfaces still require cleanup; detachment is not proof of an end.
+
+Website updates are independent of APK releases:
+  - Test unknown asset versions, mixed cached/new chunks, changed DOM and engine
+    replacement within one document. Recheck qualification when a host is created
+    or replaced; a page-load version check alone is insufficient.
+  - On an unsupported combination, avoid speculative adaptation and record a
+    compatibility limitation. Unmodified vendor behavior is a degraded state,
+    not a successful reliability fallback. Keep native navigation/diagnostics
+    usable and expose a concise limitation if a required integration is unavailable.
+    Do not add a permanent invisible input lock or automatically reload the lesson.
+  - Preserve a pinned regression archive and a repeatable requalification command.
+    A frontend/provider update invalidates the affected qualification until its
+    contracts pass again. Track observed versions during real-use validation.
+
+Exit gate: a reproducible local candidate meets owner/end/cancel and continued-
+play contracts against actual active engine variants and independent controls.
+List unsupported combinations explicitly. A standards-only prototype, safe
+nonactivation or an optional email is not completion of this phase.
+
+6. Phase D: prove or isolate the browser-provider mechanism
+---------------------------------------------------------
+Use the existing captured native sequence and provider-source analysis. Do not
+repeat earlier failed replays unchanged or treat the branch harness as Chromium.
+
+Work:
+  1. Preserve native and trusted DOM transitions with exact app/provider identity.
+     Include pressure, history, timing, stream cancellation and lifecycle state.
+  2. Reproduce in inputlab using real Android injection on the affected provider
+     when explicitly authorized and a suitable isolated device/session exists.
+     Desktop CDP and an emulator with another provider remain separate evidence.
+  3. Test provider retained-move ordering, scroll arbitration and release order
+     independently. Prefer instrumenting the actual routing path to repeatedly
+     guessing timings once reproduction stops making progress.
+  4. Compare unmodified baseline, CSS-only ownership and explicit early claiming
+     as separate inputlab variants. Preserve outside scroll, mouse click synthesis
+     and real multi-contact behavior in each comparison.
+  5. Preserve a minimal provider report supported by raw boundary evidence. An
+     optional email for the user is not a release dependency; do not contact any
+     vendor. Do not bundle our own Chromium fork as an opportunistic fix. If
+     instrumenting a provider requires a custom test build, document its source,
+     build/install feasibility and isolated environment before committing to it.
+  6. A supported browser-provider update may eventually be the correction. Verify
+     it in isolation first; changing the physical tablet provider or installing
+     an APK requires explicit approval and ends the preserved reproduction.
+
+Cross-layer diagnostics:
+  Add app, provider, document, frontend deployment and installed-policy versions
+  to each relevant incident. Keep raw browser contacts intact alongside any
+  engine-level observations. Maintain sequence/generation guards for asynchronous
+  bridge messages. Android pointer IDs and DOM touch identifiers must not be
+  assumed numerically interchangeable; establish a mapping before correlating.
+
+An asynchronous native idle signal or one delayed DOM message is not sufficient
+to delete a DOM contact. Do not introduce an automatic filtering/healing loop.
+If recovery cannot be proved safe, preserve evidence and offer explicit recovery.
+Safety against wrong moves takes precedence over silently swallowing the problem.
+
+Exit gate: reproduce the affected-provider failure and demonstrate either provider
+prevention or continued correct lesson operation despite that failure. The latter
+qualifies app resilience only; the browser defect remains open. If neither is
+demonstrated, the original freeze remains unresolved. No desktop or different-
+provider emulator result substitutes for affected-provider evidence.
+
+7. Phase E: reusable validation matrix across the product
+-------------------------------------------------------
+Build the matrix around interaction families and state invariants. Record all
+194 registered renderers as mapped; do not imply all are draggable or all have
+been executed. Give every renderer a classified contract, exception or explicit
+coverage gap. Use representative real lessons for each distinct mechanism, then
+expand where source overrides shared behavior.
+
+Interaction family             Representative coverage
+Piece manipulation             Toothpicks, polyominoes, drag/drop, sliding tiles.
+Continuous path/stroke          Drawing overlay, tracing, line/path connections.
+Selection and tap              Grids, multiple choice, clock/time inputs.
+Transform and adjustment        Rotation, resizing, sliders, measurement tools.
+Scroll and navigation           Lesson page, custom scroll, swipe, dialogs.
+Other shared surfaces           Avatar controls and pointer-driven animations.
+Input alternatives              Mouse, stylus where available, keyboard, touch taps.
+
+For each applicable family, test:
+  - Normal tap and drag; drag outside surface; scaled/scrolled coordinate mapping.
+  - Owner release before/after an extra contact; extra finger elsewhere on page.
+  - Two through five genuine contacts, rapid releases, nonzero IDs and ID reuse.
+  - touchcancel/pointercancel/lost capture, including repeated interruption.
+  - Blur/background/cover and return; tool switch; overlay; surface removal;
+    same-document lesson change; cached view reuse; document generation change.
+  - No phantom-created action, unintended drop, duplicate click, accidental
+    answer submission, lost committed arrangement, or connector across strokes.
+  - Owner release completes at most once; cancellation performs no terminal
+    commit and preserves previously committed tool work; the next genuine gesture
+    works without reload; unrelated controls and outside scroll work.
+  - Stale contacts alongside a new genuine owner, late events for an old owner,
+    reused identifiers and delayed lifecycle cleanup cannot block the next gesture
+    or apply edits from the previous gesture. Label injected provider faults.
+  - Real multifinger tools retain their declared behavior. A single-piece policy
+    is not permission to hide secondary contacts from the entire browser.
+
+Test layers and existing integration points:
+  A. Deterministic contract tests execute pinned vendor functions for baselines
+     and the proposed local integration. Include ordering/property
+     tests with reproducible seeds; label modeled provider faults as synthetic.
+  B. Desktop browser tests verify trusted event dispatch, actual listener
+     propagation, click synthesis, CSS ownership, dynamic surfaces and undo.
+     Extend scripts/test-puzzle-touch-policy.mjs only for ownership contracts;
+     do not turn its fixture into proof of actual lesson functionality.
+  C. Native instrumentation extends InputLifecycleInstrumentedTest,
+     InputReplayInstrumentedTest and BrowserSessionInstrumentedTest, using
+     -PinputLab=true. Wait for host attachment/layout before injection. Assert
+     package ends in .inputlab before any instrumentation or installation.
+  D. Release export/inspection tests extend DiagnosticExportInstrumentedTest.
+     Verify bounded queues, gap reporting, no reload and ordinary-app denial.
+  E. Authorized real lessons on the affected provider check actual piece and
+     answer state, login/navigation, audio/TTS, fullscreen and lesson controls.
+     Snapshot identities and committed work before/after without exposing secrets.
+
+Run Gradle unit tests/lint/builds and the relevant isolated suites as each native
+change lands. Record actual commands, package/provider versions and results.
+No physical tablet wake, lock, screen-off exercise, new lesson navigation or
+package update is authorized merely to finish routine checks.
+
+Stress gate: at least 1,000 seeded gesture sequences across the contract matrix
+and 100 repeated interruption/recovery cycles per relevant native scenario,
+with state/identity assertions rather than just no crash. These counts are a
+regression bar, not a statistical guarantee that the rare provider fault is fixed.
+First enumerate required state transitions and ordering cases; random counts
+cannot substitute for coverage. Record seeds and minimize failures to replayable
+sequences. Measure next-gesture success and preserved work, not only event counts.
+
+8. Phase F: release, rollback and real-use validation
+---------------------------------------------------
+Before any physical deployment:
+  - Finish the implementation gates that apply, build the exact signed candidate,
+    verify main package/version/signature/SHA-256 and archive its source revision.
+  - Keep native, frontend and provider claims separate in release notes. If a
+    reliability gate is unresolved, state the limitation and do not close the incident.
+  - Complete capture first and request explicit update/restart authorization.
+    Approval to investigate or create this plan is not approval to replace APKs.
+
+Roll out incrementally: isolated fixtures -> isolated real lesson session ->
+authorized physical candidate -> recorded everyday use. Keep a known APK and
+tested per-document policy disable path, where a qualified policy exists.
+Disabling a required compatibility layer withdraws its reliability claim; it
+does not magically restore correct vendor behavior.
+Rollback that needs reinstall/reload requires authorization and evidence capture;
+do not promise a package rollback can preserve a running document or local data.
+
+Record a proposed real-use observation window of at least seven days and 20
+normal lesson sessions spanning the interaction families, subject to the user's
+actual usage and without manufacturing chores for the child. Record actual
+duration/session count, frontend/provider versions, interruptions, recurrence and
+the user's own assessment. Absence of recurrence in that window is supporting
+evidence, not proof about an unreproduced browser defect.
+
+On recurrence: export immediately with scripts/capture-input-diagnostics.sh into
+a private durable directory, preserve the session and raw transition, classify
+the failed boundary and reopen the corresponding regression. No silent restart.
+
+9. Proposed reviewable change sequence
+-------------------------------------
+PR 1: Local feasibility and decisive reproductions.
+      Capture pinned baselines for phantom-contact refusal, wrong-finger release
+      and cancellation; evaluate local intervention candidates from section 2a.
+      Record viable/failed/unproved per mechanism before broad production work.
+PR 2: Native invariant gaps actually demonstrated by tests.
+      Small targeted ownership/session changes with inputlab regressions.
+PR 3: Qualified local surface ownership and compatibility.
+      Dedicated module, recognized engine/surface versions, cancellation semantics,
+      document/gesture lifecycle, upgrade behavior, idle disable and real-lesson
+      click/scroll/accessibility regressions. Split by proven mechanism as needed.
+PR 4: Coverage expansion and website-update qualification.
+      Both engine hosts, independent controls, source overrides and reproducible
+      acquisition/contract tooling. Prioritize lesson-blocking defects; source-only
+      avatar/marketing hypotheses must not block a proven lesson fix.
+PR 5: Affected-provider prevention evidence and release qualification.
+      Provider or justified ownership correction, real lesson regression matrix,
+      versioned findings and candidate release notes. Provider research starts
+      with PR 1; its position here does not mean postpone the primary freeze.
+
+These are review boundaries, not a waterfall. Native work, provider qualification
+and frontend experiments can progress independently. Do not invent refactors or
+fill a PR slot with unrelated tests. No step requires a vendor response. If local
+feasibility fails, return to the explicit architecture decision, not a nominal
+release that merely detects the same freeze.
+
+10. Definition of completion
+---------------------------
+The holistic effort is complete only when:
+  [ ] All known mechanisms have a regression and an identified responsible layer.
+  [ ] Our native host preserves complete streams and session/document ownership.
+  [ ] Our local solution achieves owner/end/cancel and next-gesture contracts
+      with both active shared frontend engines, without vendor cooperation.
+  [ ] Independent shared controls satisfy their applicable interaction contracts.
+  [ ] Renderer/control coverage and real lesson exceptions are explicit.
+  [ ] The actual lesson freeze is prevented with convincing affected-provider
+      evidence, either by preventing the browser failure or preserving correct
+      lesson operation when it occurs. A resilience fix does not close the browser
+      defect. Synthetic tolerance tests alone cannot close the natural incident.
+  [ ] Committed lesson work survives interruption; no cancellation becomes a
+      submitted answer; real multitouch, scrolling, taps and alternatives pass.
+  [ ] Website/provider changes trigger requalification; unsupported combinations
+      are visible limitations, not silently counted as fixed.
+  [ ] Candidate release diagnostics and rollback behavior are verified.
+  [ ] An explicitly authorized deployed candidate has recorded user validation.
+  [ ] Incident ledger, input architecture and ADB runbook match deployed reality.
+
+Planning completion and implementation completion are different. This file
+provides the implementation roadmap; it does not claim any of these open gates
+has already been met or authorize external submissions or live destructive tests.
+
+Implementation checkpoint: 0.7.8 (2026-10-19)
+--------------------------------------------
+Implemented: persistent per-document installation; guarded two-engine retired-
+contact tolerance and single-piece ownership; noncommitting engine tracking
+cleanup; source manifests and renderer dependency coverage; reproducible pinned
+fixtures; compatibility fallback; private status capture; reload/ordering tests.
+
+NOT COMPLETE: generic per-tool cancellation semantics, drawing/slider integration,
+full frontend acquisition/index tooling, runtime engine-selection/real-lesson
+coverage, affected-provider fault prevention proof, graceful user-visible status,
+and deployed everyday-use validation. Core engine cleanup cannot clear every
+view's private moving/stroke state. Do not tick the completion checklist above.
+
+The user confirmed no separate authenticated test session is available. Preserve
+the physical session. The authorized GitHub release is incremental and records
+these limits; it does not substitute release publication for the remaining gates.
+See releases/v0.7.8.txt for final checks and artifact identity.

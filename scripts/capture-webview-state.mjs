@@ -37,6 +37,7 @@ for (const page of pages.filter(page => page.type === 'page' && /^https:\/\/(?:[
       expression: `({timeOrigin:performance.timeOrigin,wall:Date.now(),url:location.origin+location.pathname,
         visibility:document.visibilityState,focused:document.hasFocus(),ready:document.readyState,
         lastTouch:window.__beastInputTraceLastTouch||null,
+        inputCompatibility:window.__beastInputCompatStatus||null,
         canvasCount:document.querySelectorAll('canvas').length})`,
       returnByValue: true, throwOnSideEffect: true, silent: true, timeout: 2000, disableBreaks: true
     });
