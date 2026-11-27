@@ -69,7 +69,7 @@ class InputLabActivity : ComponentActivity() {
             loadDataWithBaseURL("https://inputlab.invalid/", fixture, "text/html", "UTF-8", null)
         }
         if (intent.getBooleanExtra("nativeHost", false)) {
-            val chrome = BrowserChrome(this) {}
+            val chrome = BrowserChrome(this, onReload = {}, onCoverTap = {})
             nativeChrome = chrome
             chrome.browserHost.addView(webView, ViewGroup.LayoutParams(-1, -1))
             setContentView(chrome)

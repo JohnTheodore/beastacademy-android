@@ -112,6 +112,14 @@ this status. A reload reinstalls the patch but destroys the preserved document;
 do not reload to investigate an unsupported or frozen session. Engine cleanup
 is not proof that every lesson view cleared its own transient state.
 
+Version 0.7.9 cover state: a covered session shows a black, touch-consuming
+overlay at brightness 0 and ignores lesson input until it opens. Trace records
+"cover covered=true reason=sensors" on close and "cover covered=false
+reason=light|taps" on open; screen records include covered=. A covered session
+looks like frozen input: check these records before treating a dark/unresponsive
+screen as an input failure. Screen wakes (including a charger) no longer uncover.
+Before 0.7.9 the record was "cover detected" and any screen-on uncovered.
+
 Use recorded timestamps/history/coordinates to replay in the separate inputlab.
 Distinguish native Android injection from desktop/CDP injection, which uses a
 different gesture-compensation path. Label interpolated/missing samples honestly.

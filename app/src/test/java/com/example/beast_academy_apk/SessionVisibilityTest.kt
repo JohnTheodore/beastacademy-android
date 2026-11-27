@@ -4,19 +4,6 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class SessionVisibilityTest {
-    @Test fun lifecycleResumeCannotReopenCover() {
-        val session = SessionVisibility()
-        session.resume()
-        assertTrue(session.closeCover())
-        session.pause()
-        session.resume()
-        assertFalse(session.canRun)
-        assertFalse(session.closeCover())
-        session.screenOff()
-        session.screenOn()
-        assertTrue(session.canRun)
-    }
-
     @Test fun screenOnCannotResumeBackgroundActivity() {
         val session = SessionVisibility()
         session.resume()
@@ -52,6 +39,5 @@ class SessionVisibilityTest {
         session.screenOn()
         session.resume()
         assertFalse(session.canRun)
-        assertFalse(session.closeCover())
     }
 }

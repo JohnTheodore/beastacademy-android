@@ -1,6 +1,6 @@
 # Beast Academy Android Wrapper
 
-![Version](https://img.shields.io/badge/version-0.7.8-blue.svg)
+![Version](https://img.shields.io/badge/version-0.7.9-blue.svg)
 
 A streamlined Android application that provides a native container for the Beast Academy online learning platform. This project is unofficial, and it's not affiliated with beastacademy.com at all. I built this for my kids.
 
@@ -14,6 +14,16 @@ A streamlined Android application that provides a native container for the Beast
 ## Overview
 
 This project is a WebView-based Android application designed to provide a seamless experience for Beast Academy users on Android devices.
+
+### 0.7.9 Case Cover Ownership
+
+Closing the case still darkens and silences the lesson, but plugging in a charger
+(or any other screen wake) no longer brings it back. The lesson resumes only when
+the light sensor sees the case open (at least 2 lux) or after three taps on the
+black screen within two seconds. Closing now needs a light drop and a magnetic
+shift of at least 20 µT (with the device's own magnetic offset removed) held for
+one second, instead of 12 µT for 250 ms. A single `CoverGuard` owns all cover
+logic. Not yet validated on the physical tablet. See [release validation](docs/releases/v0.7.9.txt).
 
 ### 0.7.8 Lesson Input Compatibility
 
@@ -66,10 +76,11 @@ prepare future wireless ADB investigations without requiring a reload. See the
 
 ## Project Structure
 
-*   `MainActivity.kt`: Activity-owned browser session, screen/lifecycle events, cover monitor, and file picker.
+*   `MainActivity.kt`: Activity-owned browser session, screen/lifecycle events, and file picker.
+*   `CoverGuard.kt`: Sole owner of case-cover sensors, close/open detection, tap unlock and covered state.
 *   `BrowserChrome.kt`: Native browser host and sibling progress/recovery/cover controls.
 *   `BeastAcademyWebView.kt`: Native touch-stream ownership and diagnostic observation.
-*   `SessionVisibility.kt` / `PauseCompletion.kt`: Testable lifecycle and asynchronous pause coordination.
+*   `SessionVisibility.kt` / `PauseCompletion.kt`: Testable lifecycle/screen state and asynchronous pause coordination.
 *   `WebViewScripts.kt`: Browser-side speech and audio adapters.
 *   `BeastAcademyWebViewController.kt`: Authoritative controller for WebView lifecycle and reliability.
 *   `AndroidSpeechSynthesis.kt`: Native implementation of the Text-to-Speech bridge.

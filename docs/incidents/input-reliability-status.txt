@@ -1,6 +1,6 @@
 Recurring frozen input — UNRESOLVED
 ==================================
-Updated 2026-10-19. User reports at least three incidents and two or three
+Updated 2026-11-27. User reports at least three incidents and two or three
 attempted fixes that have not eliminated recurrence. Do not relabel this solved
 because one fixture passes or dragging resumes after a workaround.
 
@@ -46,6 +46,14 @@ Known evidence and fix attempts
   See ../retired-touch-guard.txt and ../releases/v0.7.8.txt. This is an incremental
   release, not completion of the holistic plan. Tablet still not updated.
   Engineer email drafted at ../beast-academy-engineer-email.txt; nothing sent.
+- Version 0.7.9 (16) consolidates case-cover handling into CoverGuard. Close now
+  requires a light drop plus a >= 20 uT bias-corrected field shift held 1 s
+  (was 12 uT uncalibrated for 250 ms); a screen wake (e.g. charger) no longer
+  uncovers, only >= 2 lux or three taps. User-reported trigger for the change:
+  plugging in a charger after closing the case resumed lesson audio. A false
+  cover close shows a black, input-blocking overlay that resembles frozen input;
+  the trace records each cover transition. Unit tests only; not tablet-validated.
+  Not a fix for the recurring input incident.
 - Persistent diagnostics, automatic incident snapshots, shell-protected release
   export and no-reload inspection controls are implemented locally. Signed,
   non-debuggable emulator tests verify export/inspection without document

@@ -1,8 +1,10 @@
 package com.example.beast_academy_apk
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
@@ -11,7 +13,12 @@ import android.widget.ProgressBar
 import android.widget.TextView
 
 /** Passive native siblings of the browser; only visible controls and the cover take input. */
-internal class BrowserChrome(context: Context, onReload: () -> Unit) : FrameLayout(context) {
+@SuppressLint("ClickableViewAccessibility")
+internal class BrowserChrome(
+    context: Context,
+    onReload: () -> Unit,
+    onCoverTap: (timeMillis: Long) -> Unit,
+) : FrameLayout(context) {
     val browserHost = InputTraceHost(context)
     private val progress = ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal)
     private val recovery = FrameLayout(context)
@@ -65,6 +72,10 @@ internal class BrowserChrome(context: Context, onReload: () -> Unit) : FrameLayo
             isClickable = true
             isFocusable = true
             visibility = GONE
+            setOnTouchListener { _, event ->
+                if (event.actionMasked == MotionEvent.ACTION_DOWN) onCoverTap(event.eventTime)
+                true
+            }
         }
         addView(cover, LayoutParams(-1, -1))
     }

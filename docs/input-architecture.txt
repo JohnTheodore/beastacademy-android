@@ -34,10 +34,12 @@ natural failure. See incidents/2026-10-19-input/findings.txt.
 Production changes made locally
 -------------------------------
 MainActivity owns creation, lifecycle, screen receiver, file-picker registration,
-cover monitoring, and final shutdown. BrowserChrome owns only native widgets.
-SessionVisibility holds the independent resumed/screen/cover/destroyed reasons
-for suspension. A lifecycle resume cannot reopen a closed cover; a screen-on
-broadcast cannot resume a background Activity.
+and final shutdown. BrowserChrome owns only native widgets. SessionVisibility
+holds the resumed/screen/destroyed reasons for suspension; a screen-on broadcast
+cannot resume a background Activity. CoverGuard (0.7.9) is the sole owner of the
+case cover: sensors, close/open decisions, tap unlock and the covered flag. The
+lesson runs only when visible and uncovered. Neither a lifecycle resume nor a
+screen wake reopens a cover; only >= 2 lux or three taps within 2 s do.
 
 BeastAcademyWebView owns the native stream boundary. A DOWN claims the stream
 from native ancestors. Interruption sends CANCEL with every currently active

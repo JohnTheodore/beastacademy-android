@@ -1,0 +1,82 @@
+Beast Academy Android 0.7.9 — release validation
+===============================================
+2026-11-27. Version code 16. Case-cover behavior release; the recurring frozen
+input incident remains unresolved and is not addressed by this release.
+
+User-reported problem
+---------------------
+After closing the case (lesson went dark and silent), plugging in a USB-C
+charger woke the screen and the lesson resumed with sound. Any ACTION_SCREEN_ON
+cleared the covered state, so the app treated the charger wake as an opening.
+
+Behavior
+--------
+CoverGuard is now the sole owner of the case cover: sensor registration, close
+and open decisions, tap unlock and the covered flag. It replaces
+CoverCloseDetector, CoverSensorMonitor and the cover flag in SessionVisibility.
+The lesson runs only when the Activity is resumed, the screen is on, and the
+cover is open.
+
+Close: light falls to <= 15% of its recent level (from >= 1 lux, by >= 0.5 lux)
+and field strength shifts by >= max(20 uT, 20% of its recent level). The two
+onsets must be within 750 ms and both must hold for 1 s, after a 1.5 s warm-up.
+Previously 12 uT and 250 ms, comparing latest samples (which an on-change light
+sensor would fail to satisfy once silent). Uncalibrated magnetometer readings
+now subtract the reported hard-iron offset, so rotating the tablet barely
+changes field strength.
+
+Covered: black overlay, brightness 0, audio paused, keep-screen-on cleared, as
+before. Android's normal timeout turns the screen off.
+
+Open: a light reading >= 2 lux, or three taps on the black overlay within 2 s
+(for a nearly dark room). A screen wake (charger, notification, power button)
+never opens it. Sensors listen whenever the Activity is resumed with the screen
+on; the light sensor's initial reading opens immediately if the case is open.
+
+Trace records: "cover covered=true|false reason=sensors|light|taps" and
+screen records now include covered=. Previous builds wrote "cover detected".
+
+Validation
+----------
+- 20 JVM unit tests passed, zero failures/errors/skips. CoverGuardTest (11)
+  covers close timing with a silent on-change light sensor, darkness-only and
+  magnet-only cases, the 20 uT boundary, onset skew, light returning, warm-up,
+  a screen wake inside a closed case, light reopen and re-arming, tap unlock,
+  and hard-iron offset removal.
+- Debug/release lint: 0 errors; no warnings in new cover code. Debug/release
+  APK builds and debug instrumentation compilation passed.
+- Main cover/lifecycle source lines (non-blank, non-comment) across the
+  affected files: 429 -> 352.
+
+Not validated
+-------------
+- No emulator or physical-tablet run. Real sensor values for this tablet and
+  case (open/closed lux, field shift from the case magnet, field change during
+  handling) are unmeasured; the 20 uT, 2 lux and 1 s values are untested on
+  the device.
+- With no lock screen, the black overlay consumes touches while covered; a case
+  pressing on the screen can keep the screen awake until timeout resets.
+- Android's "Stay awake while charging" developer setting, if enabled, keeps the
+  covered (black, brightness 0) screen on while charging.
+
+Commands
+--------
+  ./gradlew :app:testDebugUnitTest :app:lintDebug :app:lintRelease \
+    :app:assembleDebug :app:assembleRelease :app:compileDebugAndroidTestKotlin
+
+No physical tablet install, restart, navigation, unlock or test input occurred.
+
+Artifact
+--------
+Name: beastacademy-android-v0.7.9.apk
+Package: com.example.beast_academy_apk
+Packaging: debug APK, matching prior GitHub releases; version 0.7.9 / code 16.
+Size: 30,418,839 bytes
+SHA-256: 0dc7668e52a5bb29592f0643e43df064b93c69f39b14acfe46a29150eb649098
+Signer certificate SHA-256:
+  b504420c7aca6e24580d6e72653f3d6b6b82d4bdfeb623f0edfb2ef80e68f65b
+Matches v0.7.8, v0.7.7 and v0.7.6. Tag v0.7.9 identifies the source commit.
+Durable private checks and APK:
+  /home/jt/.local/state/beastacademy/releases/v0.7.9/
+
+Do not close issue #1 based on this release.
